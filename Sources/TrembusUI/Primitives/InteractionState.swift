@@ -68,7 +68,11 @@ extension View {
 /// and hands the content one `InteractionState`. Shared by every interactive component so
 /// they all behave — and can all be frozen — the same way.
 struct InteractionReader<Content: View>: View {
-    let isPressed: Bool
+    var isPressed = false
+    /// Where focus comes from. `nil` reads SwiftUI's `isFocused` environment — right INSIDE a
+    /// button or toggle style. A text field wraps its control instead of living inside it, so
+    /// it tracks focus with `@FocusState` and passes it in here.
+    var focus: Bool?
     @ViewBuilder let content: (InteractionState) -> Content
 
     @State private var isHovered = false
@@ -84,6 +88,6 @@ struct InteractionReader<Content: View>: View {
     private var live: InteractionState {
         InteractionState(
             isHovered: isHovered && isEnabled, isPressed: isPressed && isEnabled,
-            isFocused: isFocused && isEnabled, isEnabled: isEnabled)
+            isFocused: (focus ?? isFocused) && isEnabled, isEnabled: isEnabled)
     }
 }

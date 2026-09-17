@@ -24,6 +24,7 @@ public enum Catalog {
         .button,
         .meter,
         .switch,
+        .input,
         // scaffold:entries — `make new` inserts new components above this line
     ]
 

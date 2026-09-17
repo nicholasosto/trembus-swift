@@ -57,6 +57,8 @@ Skills: **`/new-component <Name>`** scaffolds. **`/finish-component <Name>`** is
   Curves (`Motion.calm`) for color/layout; springs (`Motion.spring(.snap)`) for anything the pointer touches.
 - **Tone is never the only signal.** Always a word; the dot becomes a glyph under Differentiate Without Color.
 - **Haptics for snaps and thresholds, not clicks** — a trackpad click already is one.
+- **Labeled controls share `FieldShell`** (label → helper → control → error), like the web's. Input uses
+  it; Textarea and Select should too. Spoken-text rules live in `FieldText` / `FieldStatus` so they are testable.
 - **Three-file shape**: `Components/<Name>/` + `Entries/Components/<Name>Entry.swift` +
   `Tests/…/<Name>Tests.swift`. Specimens named `Default` / `States` / `Interaction`. `contract.name` = directory name.
 
@@ -115,6 +117,24 @@ builders and can't leave it. Render tests loop inside one test and name entry/sp
 no bundle id: no Dock name, invisible to Accessibility Inspector and screen-driving tools, and it
 blocks the terminal. If an `app_screenshot` of it comes back as a tiny thumbnail, the window is on
 another Space or in a side dock.
+
+**8 · A native macOS text field does several things you would not guess.** All found building `Input`;
+each has a regression test that was seen failing first.
+   - It **ignores any styling on `prompt:`** (even pure red) and paints a dark system gray — dark enough
+     that an empty field looks pre-filled. So `Input` draws its own placeholder in `textFaint`.
+   - With no prompt it **paints its TITLE as a placeholder**. So the native field gets `""` as its title
+     and the accessible name comes from `.accessibilityLabel`.
+   - A plain field has **zero text inset** (measured by overlay), so a hand-drawn placeholder sits at
+     offset 0 — but it must follow `\.multilineTextAlignment`, and `.leading` reaches AppKit as NATURAL
+     alignment, which follows the APP's direction, not SwiftUI's `layoutDirection`.
+   - While an **input method composes** (CJK, dead-key accents) the text lives in the field editor and the
+     binding stays `""` — watch `NSText.didChangeNotification` + `hasMarkedText()` or the placeholder shows through.
+   - A **programmatic focus selects everything**, so the next keystroke replaces the field. `Input` collapses
+     the selection to the end when IT hands focus over (a click on the box's chrome, the secure ⇄ plain
+     swap) — never for Tab, where select-all is what a keyboard user expects.
+   - Swapping `TextField` ⇄ `SecureField` is a different native view: **focus is dropped** unless handed back.
+   - Focus-dependent tests need a real (never shown) window that claims to be key — see `InputLiveTests`.
+     A main-actor test IS a main-queue job, so anything the component defers only runs once the test `await`s.
 
 ## Not verified yet
 

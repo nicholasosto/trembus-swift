@@ -40,6 +40,21 @@ nonisolated enum ControlMetrics {
         }
     }
 
+    struct Input {
+        let height: CGFloat
+        let paddingX: CGFloat
+        let type: TypeScale
+    }
+
+    /// Heights match `button` on purpose: a field next to a button must line up.
+    static func input(_ step: Step) -> Input {
+        switch step {
+        case .sm: Input(height: 24, paddingX: Space.s3, type: .sm)
+        case .md: Input(height: 30, paddingX: Space.s4, type: .base)
+        case .lg: Input(height: 38, paddingX: Space.s4, type: .md)
+        }
+    }
+
     struct Badge {
         let height: CGFloat
         let paddingX: CGFloat
