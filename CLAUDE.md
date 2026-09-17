@@ -32,6 +32,11 @@ edit ──▶ make snap NAME=X ──▶ READ Snapshots/X.png ──▶ make ga
 
 **Always go through `make` or `Scripts/swiftw` — never bare `swift`.** See the first gotcha.
 
+**CI** (`.github/workflows/ci.yml`, `macos-26`) runs `make validate` then `make snap` on every push and PR,
+and attaches the sheets as the `snapshots` artifact. The runner is a headless 1× machine — the same
+conditions that once made snapshots blurry — so a green run also proves the density fix off this Mac.
+The repo is **public**: a push to `main` is a publication.
+
 Skills: **`/new-component <Name>`** scaffolds. **`/finish-component <Name>`** is the done-bar
 (look in 3 themes → feel it live → adversarial review → fixes WITH tests → re-gate).
 
@@ -117,4 +122,3 @@ another Space or in a side dock.
   but real Tab focus was never observed — needs System Settings → Keyboard → Keyboard navigation ON.
   Open question: a `ButtonStyle` can't call `.focusEffectDisabled()` on its own button from the inside,
   so macOS may draw its blue ring as well as ours.
-- **`.github/workflows/ci.yml`** has never run. Expect to adjust the runner image on first push.

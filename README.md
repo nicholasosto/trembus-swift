@@ -1,5 +1,7 @@
 # trembus-swift
 
+[![CI](https://github.com/nicholasosto/trembus-swift/actions/workflows/ci.yml/badge.svg)](https://github.com/nicholasosto/trembus-swift/actions/workflows/ci.yml)
+
 A SwiftUI component library for macOS — the Swift sibling of
 [`@trembus/ui`](https://github.com/nicholasosto/Trembus-Component-Library).
 Same tokens, same three themes, same first-principles contract.

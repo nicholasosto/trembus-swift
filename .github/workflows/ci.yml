@@ -1,5 +1,6 @@
-# NOTE: this workflow has never run — it was written offline. On first push, expect to adjust
-# the runner image (it needs Xcode 26+, i.e. Swift 6.2+ for `defaultIsolation` in Package.swift).
+# The same gate as `make validate`, then the contact sheets — attached to every run as the
+# `snapshots` artifact, so each push can be LOOKED at, not just passed.
+# Needs Xcode 26+ (Swift 6.2+ for `defaultIsolation` in Package.swift), hence macos-26.
 name: CI
 
 on:
