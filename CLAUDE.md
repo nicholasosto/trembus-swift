@@ -88,6 +88,8 @@ components is NOT a component and gets no contract.
   `Catalog.entries` (below the `scaffold:entries` marker). No `make new` — there is nothing else to scaffold.
 - **`composes:`** — primitive FILE names + component names, like `buildsOn`. `composesMatchesWhatTheExampleReallyUses`
   reads the entry's source, so it cannot rot; that list is what puts the example on the `make neighbors` walk.
+  Only CODE counts as a use — comments and the inside of strings are skipped, because the `composes:` list sits
+  in the very file being read and would otherwise vouch for itself.
   Style components are found by their modifier (`.buttonStyle(.trembus)` → Button, `.toggleStyle(.trembus)` → Switch).
 - **Public API only.** The catalog reaches the library through a plain `import TrembusUI`, as a consumer does.
   If a mockup needs something internal, that is a finding about the library — never `@testable` your way in.
