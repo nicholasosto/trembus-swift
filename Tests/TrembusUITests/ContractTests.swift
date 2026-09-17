@@ -143,11 +143,14 @@ struct ContractTests {
     }
 
     /// The units (primitive files + components) that `sources` really use, leaving out `own`.
-    /// Comment lines are dropped: a usage example in a doc comment is not a dependency.
+    /// Comment lines are dropped: a usage example in a doc comment is not a dependency. So is the inside
+    /// of every string literal — a name in a specimen `note:`, or in an example's own `composes:` list
+    /// (which sits in the very file being read), must not count as a use.
     static func unitsUsed(in sources: [String], except own: String? = nil) throws -> Set<String> {
         let source = sources.joined(separator: "\n").split(separator: "\n")
             .filter { !$0.trimmingCharacters(in: .whitespaces).hasPrefix("//") }
             .joined(separator: "\n")
+            .replacing(/"(?:[^"\\\n]|\\.)*"/, with: "\"\"")
         var used: Set<String> = []
         for (unit, patterns) in unitPatterns where unit != own {
             // NSRegularExpression on purpose: Swift Regex's `\\b` follows Unicode word rules, where the
@@ -257,6 +260,21 @@ struct ContractTests {
                 Set(entry.composes) == used,
                 "\(entry.name).composes says \(entry.composes.sorted()) but its source uses \(used.sorted())")
         }
+    }
+
+    /// An example's entry file holds its own `composes:` list. If a name inside a string counted as a
+    /// use, that list would vouch for itself: delete the `Badge(…)` call, keep "Badge" in the list, and
+    /// the gate would stay green. (Found in review of the PR that added examples.)
+    @Test func aNameInsideAStringIsNotAUse() throws {
+        let listedButNeverCalled = """
+            composes: ["Badge", "Meter"],
+            specimens: [
+                Specimen("Default", note: "a Card with a Badge — Text(\\"Surface\\")") { Meter(value: 0.5) }
+            ]
+            """
+        #expect(try Self.unitsUsed(in: [listedButNeverCalled]) == ["Meter"])
+        // Code between two strings on one line is still code.
+        #expect(try Self.unitsUsed(in: ["Labeled(\"a\") { Badge(\"b\") }"]) == ["Badge"])
     }
 
     @Test func neighborsReachTheExamples() {
