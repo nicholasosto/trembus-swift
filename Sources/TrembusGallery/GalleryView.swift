@@ -46,6 +46,7 @@ extension CatalogEntry.Kind {
         case .foundation: "swatchpalette"
         case .primitive: "square.on.square.dashed"
         case .component: "switch.2"
+        case .example: "rectangle.3.group"
         }
     }
 }
@@ -82,6 +83,11 @@ private struct EntryDetail: View {
             Text(entry.summary)
                 .font(.trembus(.md))
                 .foregroundStyle(.theme(.textDim))
+            if !entry.composes.isEmpty {
+                Text("composes " + entry.composes.joined(separator: " · "))
+                    .font(.trembus(.xs, family: .mono))
+                    .foregroundStyle(.theme(.textFaint))
+            }
         }
     }
 }

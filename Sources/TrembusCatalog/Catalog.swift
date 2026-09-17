@@ -27,22 +27,24 @@ public enum Catalog {
         .input,
         .card,
         // scaffold:entries — `make new` inserts new components above this line
+        // Examples
+        .projectSettings,
     ]
 
     public static func entries(of kind: CatalogEntry.Kind) -> [CatalogEntry] {
         entries.filter { $0.kind == kind }
     }
 
-    /// Harmonics: the components to re-look at when `name` (a primitive file or a component) changes —
-    /// everything that builds on it, walked backwards at most `hops` steps. Review candidates, not proof.
+    /// Harmonics: what to re-look at when `name` (a primitive file or a component) changes — every
+    /// component that builds on it and every example that composes it, walked backwards at most
+    /// `hops` steps. Review candidates, not proof.
     public static func neighbors(of name: String, hops: Int = 2) -> [(name: String, distance: Int)] {
         var found: [(name: String, distance: Int)] = []
         guard hops > 0 else { return found }
         var frontier = [name]
         for distance in 1...hops {
             let next = entries.filter { entry in
-                guard let contract = entry.contract else { return false }
-                return contract.buildsOn.contains { target in
+                entry.madeOf.contains { target in
                     frontier.contains { $0.caseInsensitiveCompare(target) == .orderedSame }
                 }
             }

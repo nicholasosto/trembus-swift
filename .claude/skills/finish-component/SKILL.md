@@ -77,6 +77,7 @@ make snap NAME="$(make -s neighbors NAME=Surface | tr '\n' ' ')"         # re-ph
 - Touched a **primitive**? Run `neighbors` for each file touched and **Read every neighbor's sheet**.
 - Touched **tokens**? Everything is a neighbor: `make snap`, read all.
 - Touched only `Components/<Name>/`? Still run `make -s neighbors NAME=<Name>` — a component can be built on.
+- **Examples are neighbors too.** A mockup that composes `<Name>` shows up in that list — read its sheet: a change that looks right alone can look wrong in a group.
 - Changed what the component MEANS (not just how it looks)? That is a Form revision: web contract first, bump `revision`, mirror here.
 
 ## 7 · Re-gate
