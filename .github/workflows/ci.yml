@@ -1,0 +1,26 @@
+# NOTE: this workflow has never run — it was written offline. On first push, expect to adjust
+# the runner image (it needs Xcode 26+, i.e. Swift 6.2+ for `defaultIsolation` in Package.swift).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: make doctor
+      - name: Gate — lint + build + test
+        run: make validate
+      - name: Contact sheets
+        run: make snap
+      - name: Upload contact sheets
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshots
+          path: Snapshots

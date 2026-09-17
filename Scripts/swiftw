@@ -1,0 +1,75 @@
+#!/bin/bash
+# swiftw — `swift`, but with a toolchain that can actually build SwiftUI.
+#
+#   Scripts/swiftw build            same arguments as `swift`
+#   Scripts/swiftw --doctor         say which toolchain was picked, and why
+#
+# WHY THIS EXISTS
+#   From the macOS 27 SDK on, `@State` is a MACRO. Expanding it needs the SwiftUIMacros
+#   compiler plugin, which ships inside Xcode — NOT inside Command Line Tools. So with
+#   `xcode-select` pointing at CLT (common: CLT updates itself ahead of Xcode), a plain
+#   `swift build` dies on every `@State`.
+#
+# WHAT IT DOES — for this process only, never changes system settings:
+#   1. active developer dir is a full Xcode      → use it as is
+#   2. some Xcode is installed                    → DEVELOPER_DIR=<that Xcode>
+#   3. no Xcode, but CLT has a pre-27 macOS SDK   → SDKROOT=<that SDK>  (@State not yet a macro)
+#   4. none of the above                          → explain and stop
+set -euo pipefail
+
+PLUGIN="Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib"
+has_plugin() { [ -n "${1:-}" ] && [ -f "$1/$PLUGIN" ]; }
+
+choice=""   # human-readable reason
+pick() {
+    local active
+    active="$(xcode-select -p 2>/dev/null || true)"
+
+    if has_plugin "${DEVELOPER_DIR:-}"; then
+        choice="DEVELOPER_DIR was already set to a full Xcode: $DEVELOPER_DIR"
+        return 0
+    fi
+    if has_plugin "$active"; then
+        choice="active developer dir is a full Xcode: $active"
+        return 0
+    fi
+    local app dev
+    for app in /Applications/Xcode.app /Applications/Xcode*.app "$HOME"/Applications/Xcode*.app; do
+        dev="$app/Contents/Developer"
+        if has_plugin "$dev"; then
+            export DEVELOPER_DIR="$dev"
+            choice="xcode-select points at '$active' (no SwiftUI macro plugin) → using $dev for this command"
+            return 0
+        fi
+    done
+    local sdk
+    while IFS= read -r sdk; do
+        [ -d "$sdk" ] || continue
+        export SDKROOT="$sdk"
+        choice="no Xcode found → Command Line Tools with $(basename "$sdk"), where @State is not a macro yet"
+        return 0
+    done < <(ls -d "$active"/SDKs/MacOSX2[0-6]*.sdk 2>/dev/null | sort -rV)
+    return 1
+}
+
+if ! pick; then
+    cat >&2 <<'EOF'
+swiftw: no toolchain here can build SwiftUI.
+
+  Command Line Tools alone can't expand SwiftUI's macros (since the macOS 27 SDK even
+  @State is one), and no Xcode or pre-27 SDK was found.
+
+  Fix: install Xcode from the App Store. You do NOT need to run xcode-select —
+  swiftw finds it on its own.
+EOF
+    exit 1
+fi
+
+if [ "${1:-}" = "--doctor" ]; then
+    echo "toolchain : $choice"
+    echo "swift     : $(swift --version 2>&1 | head -1)"
+    echo "sdk       : $(xcrun --show-sdk-version --sdk macosx 2>/dev/null || echo '?') (${SDKROOT:-default})"
+    exit 0
+fi
+
+exec swift "$@"

@@ -1,0 +1,199 @@
+#!/bin/bash
+# new-component — scaffold a component in the canonical three-file shape.
+#
+#   Scripts/new-component Tag
+#   Scripts/new-component AvatarGroup --lead reveal-state
+#
+#   Sources/TrembusUI/Components/<Name>/<Name>.swift              the component
+#   Sources/TrembusCatalog/Entries/Components/<Name>Entry.swift   contract + 3 specimens + Xcode preview
+#   Tests/TrembusUITests/<Name>Tests.swift                        its own logic tests
+#   …and registers it in Sources/TrembusCatalog/Catalog.swift
+#
+# It compiles and renders immediately. The contract gate stays RED until the TODO
+# statements are replaced with real ones — that is deliberate.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+die() { echo "new-component: $*" >&2; exit 1; }
+
+NAME=""
+LEAD="reveal-state"
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --lead) LEAD="${2:-}"; shift 2 ;;
+        -h|--help) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -*) die "unknown option $1" ;;
+        *) [ -z "$NAME" ] || die "one name at a time (got '$NAME' and '$1')"; NAME="$1"; shift ;;
+    esac
+done
+
+[ -n "$NAME" ] || die "usage: Scripts/new-component <Name> [--lead reveal-state|afford-action|acknowledge-input]"
+[[ "$NAME" =~ ^[A-Z][A-Za-z0-9]*$ ]] || die "'$NAME' must be PascalCase letters and digits (Tag, AvatarGroup)"
+
+case "$LEAD" in
+    reveal-state) LEAD_CASE="revealState" ;;
+    afford-action) LEAD_CASE="affordAction" ;;
+    acknowledge-input) LEAD_CASE="acknowledgeInput" ;;
+    *) die "--lead must be reveal-state, afford-action, or acknowledge-input (got '$LEAD')" ;;
+esac
+
+COMPONENT_DIR="Sources/TrembusUI/Components/$NAME"
+COMPONENT_FILE="$COMPONENT_DIR/$NAME.swift"
+ENTRY_FILE="Sources/TrembusCatalog/Entries/Components/${NAME}Entry.swift"
+TEST_FILE="Tests/TrembusUITests/${NAME}Tests.swift"
+CATALOG_FILE="Sources/TrembusCatalog/Catalog.swift"
+MARKER="// scaffold:entries"
+
+[ ! -e "$COMPONENT_DIR" ] || die "$COMPONENT_DIR already exists — not overwriting"
+[ ! -e "$ENTRY_FILE" ] || die "$ENTRY_FILE already exists — not overwriting"
+[ ! -e "$TEST_FILE" ] || die "$TEST_FILE already exists — not overwriting"
+grep -q "$MARKER" "$CATALOG_FILE" || die "can't find the '$MARKER' marker in $CATALOG_FILE"
+
+# Styles for what SwiftUI has, views for what it lacks. A view named like a SwiftUI type
+# would be ambiguous in every file that imports both.
+SDK="$(xcrun --show-sdk-path --sdk macosx 2>/dev/null || true)"
+for framework in SwiftUI SwiftUICore; do
+    interface="$SDK/System/Library/Frameworks/$framework.framework/Versions/A/Modules/$framework.swiftmodule/arm64e-apple-macos.swiftinterface"
+    [ -f "$interface" ] || continue
+    if grep -qE "public (struct|enum|class|protocol|typealias|actor) ${NAME}([ <:{]|\$)" "$interface"; then
+        cat >&2 <<EOF
+new-component: SwiftUI already has a type called '$NAME'.
+
+  A view with that name would be ambiguous wherever both modules are imported.
+  Two ways forward:
+    · it restyles SwiftUI's own $NAME  → write a STYLE, by hand. Copy the shape of
+      Sources/TrembusUI/Components/Switch/ (a ToggleStyle) or …/Button/ (a ButtonStyle).
+      The directory is still Components/$NAME/ and the contract name is still "$NAME".
+    · it is something new               → pick a name SwiftUI doesn't use.
+EOF
+        exit 1
+    fi
+done
+
+# avatarGroup from AvatarGroup; urlField from URLField.
+LOWER="$(perl -e '$_ = shift; s/^([A-Z]+)([A-Z][a-z])/\L$1\E$2/ or s/^([A-Z]+)$/\L$1/ or s/^([A-Z])/\L$1/; print' "$NAME")"
+DECLARED="$LOWER"
+case " associatedtype class deinit enum extension fileprivate func import init inout internal let open operator private precedencegroup protocol public rethrows static struct subscript typealias var break case catch continue default defer do else fallthrough for guard if in repeat return throw switch where while Any as await false is nil self Self super throws true try " in
+    *" $LOWER "*) DECLARED="\`$LOWER\`" ;;
+esac
+grep -qE "^\s*\.${LOWER},\s*$" "$CATALOG_FILE" && die "Catalog.swift already lists .$LOWER"
+
+mkdir -p "$COMPONENT_DIR"
+
+cat > "$COMPONENT_FILE" <<EOF
+import SwiftUI
+import TrembusTokens
+
+/// TODO: one sentence — what $NAME is for, and what it is NOT for (name the near neighbor).
+///
+///     $NAME("Label")
+///
+/// House rules: tokens only, never a hex · size follows \`.controlSize(_:)\` (add a table to
+/// \`ControlMetrics\`) · interactive? build on \`Pressable\` so every state can be frozen.
+public struct $NAME: View {
+    private let title: String
+
+    public init(_ title: String) {
+        self.title = title
+    }
+
+    public var body: some View {
+        let shape = RoundedRectangle(cornerRadius: Radius.md.value, style: .continuous)
+        Text(title)
+            .font(.trembus(.base, weight: .medium))
+            .foregroundStyle(.theme(.text))
+            .padding(.horizontal, Space.s4)
+            .padding(.vertical, Space.s3)
+            .background(.theme(.surfaceRaised), in: shape)
+            .overlay(shape.strokeBorder(.theme(.border), lineWidth: 1))
+    }
+}
+EOF
+
+cat > "$ENTRY_FILE" <<EOF
+import SwiftUI
+import TrembusTokens
+import TrembusUI
+
+extension CatalogEntry {
+    static let $DECLARED = CatalogEntry(
+        name: "$NAME",
+        kind: .component,
+        summary: "TODO: one line — what it is and when to reach for it.",
+        contract: ComponentContract(
+            name: "$NAME",
+            leadJob: .$LEAD_CASE,
+            revealState: JobSatisfaction(
+                "TODO: how does it make state perceivable?",
+                specimen: "States"),
+            affordAction: JobSatisfaction(
+                "TODO: what visibly invites action? (or: non-interactive by design — say why)",
+                specimen: "Default"),
+            acknowledgeInput: JobSatisfaction(
+                "TODO: how does it answer every input? (or: takes no input — how does it show change?)",
+                specimen: "Interaction"),
+            a11y: .init(focusRing: false),
+            tokensUsed: ["TODO"]),
+        specimens: [
+            Specimen("Default", note: "$NAME(\"Label\")") {
+                $NAME("Label")
+            },
+            Specimen("States", note: "every state it can be in — freeze pointer states with StateRow { … }") {
+                HStack(spacing: Space.s4) {
+                    $NAME("One")
+                    $NAME("Two")
+                }
+            },
+            Specimen("Interaction", note: "live — what changes when you touch it") {
+                ${NAME}Playground()
+            },
+        ])
+}
+
+private struct ${NAME}Playground: View {
+    @State private var count = 0
+
+    var body: some View {
+        HStack(spacing: Space.s4) {
+            Button("Change") { count += 1 }.buttonStyle(.trembus(.outline))
+            $NAME("Changed \(count)×")
+        }
+    }
+}
+
+struct ${NAME}Entry_Previews: PreviewProvider {
+    static var previews: some View { EntrySheet(.$LOWER) }
+}
+EOF
+
+cat > "$TEST_FILE" <<EOF
+import Testing
+
+@testable import TrembusTokens
+@testable import TrembusUI
+
+// Rendering in every theme and the contract are already covered for $NAME by RenderTests
+// and ContractTests. This file is for its OWN LOGIC: clamping, value → tone rules, edge
+// cases. Expose the logic as an internal computed property and test that, the way
+// MeterTests checks \`Meter.fraction\`.
+
+@Suite("$NAME")
+struct ${NAME}Tests {
+}
+EOF
+
+# Register above the marker, keeping its indentation.
+LOWER="$LOWER" perl -0pi -e 's/^([ \t]*)(\/\/ scaffold:entries)/$1.$ENV{LOWER},\n$1$2/m' "$CATALOG_FILE"
+
+cat <<EOF
+created  $COMPONENT_FILE
+created  $ENTRY_FILE
+created  $TEST_FILE
+updated  $CATALOG_FILE   (+ .$LOWER)
+
+next
+  1. make snap NAME=$NAME      see it in all three themes → Snapshots/$NAME.png
+  2. design it                 $COMPONENT_FILE
+  3. fill the contract         the gate stays RED while it says TODO — on purpose
+  4. make validate
+EOF
