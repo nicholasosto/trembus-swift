@@ -82,7 +82,7 @@ if options.list {
 }
 
 // Harmonics: who builds on this, walked backwards two hops. Names only, one per line, so it pipes:
-//   make snap NAME="$(make -s neighbors NAME=Surface)"
+//   make snap NAME="$(make -s neighbors NAME=Surface | tr '\n' ' ')"   (make needs them on ONE line)
 if let changed = options.neighborsOf {
     for neighbor in Catalog.neighbors(of: changed) { print(neighbor.name) }
     exit(0)

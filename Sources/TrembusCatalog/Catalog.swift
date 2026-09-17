@@ -37,8 +37,9 @@ public enum Catalog {
     /// everything that builds on it, walked backwards at most `hops` steps. Review candidates, not proof.
     public static func neighbors(of name: String, hops: Int = 2) -> [(name: String, distance: Int)] {
         var found: [(name: String, distance: Int)] = []
+        guard hops > 0 else { return found }
         var frontier = [name]
-        for distance in 1...max(hops, 1) {
+        for distance in 1...hops {
             let next = entries.filter { entry in
                 guard let contract = entry.contract else { return false }
                 return contract.buildsOn.contains { target in

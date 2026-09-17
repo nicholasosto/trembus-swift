@@ -193,21 +193,62 @@ struct ContractTests {
         .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         .appendingPathComponent("Trembus-Component-Library/packages/ui/src/components", isDirectory: true)
 
-    /// The drift signal. The web contract is the source of truth; this Shape mirrors it word for word.
+    /// The drift signal. The web contract is the source of truth; this Shape mirrors it word for word —
+    /// in BOTH directions: a sentence added on the web and missing here is drift too.
     @Test func everyFormMirrorsTheWebContractWordForWord() throws {
         for entry in Self.componentEntries {
             guard let form = entry.contract?.form else { continue }
             let file = Self.webComponentsDirectory.appendingPathComponent("\(entry.name)/\(entry.name).contract.ts")
             guard let web = try? String(contentsOf: file, encoding: .utf8) else { continue }
-            // Compare on text only: TS wraps long strings across lines and quotes them differently.
-            let flat = web.replacing(/['"`]\s*\+?\s*\n\s*['"`]/, with: "").replacing(/\s+/, with: " ")
-            for sentence in [form.id, "revision: '\(form.revision)'", form.meaning] + form.invariants
-                + form.prohibitions + form.variation
-            {
-                #expect(
-                    flat.contains(sentence.replacing("'", with: "\\'")) || flat.contains(sentence),
-                    "\(entry.name) form has drifted from \(file.lastPathComponent): '\(sentence)' is not there")
+            let webStrings = Self.formStrings(inWebContract: web)
+            #expect(
+                !webStrings.isEmpty, "\(file.lastPathComponent) has no `form:` block, but \(entry.name) has a Form here"
+            )
+            let mirrored = Set(
+                [form.id, form.revision, form.meaning] + form.invariants + form.prohibitions + form.variation
+                    + form.relationships.flatMap { [$0.kind.rawValue, $0.target, $0.note] })
+            for missing in mirrored.subtracting(webStrings).sorted() {
+                Issue.record(
+                    "\(entry.name) form has drifted: '\(missing)' is here but not in \(file.lastPathComponent)")
+            }
+            for missing in webStrings.subtracting(mirrored).sorted() {
+                Issue.record(
+                    "\(entry.name) form has drifted: '\(missing)' is in \(file.lastPathComponent) but not here")
             }
         }
+    }
+
+    /// Every string literal inside the web contract's `form: { … }` block, with `'a' + 'b'` joined
+    /// and escapes undone. The block runs to the end of the object, so `form` must stay the LAST field.
+    static func formStrings(inWebContract source: String) -> Set<String> {
+        guard let start = source.range(of: "form: {") else { return [] }
+        let block = String(source[start.upperBound...])
+            .replacing(/['"`]\s*\+\s*['"`]/, with: "")
+        var strings: Set<String> = []
+        for match in block.matches(of: /'((?:[^'\\]|\\.)*)'/) {
+            strings.insert(String(match.1).replacing("\\'", with: "'"))
+        }
+        return strings
+    }
+
+    @Test func theWebFormParserSeesEverySentenceAndOnlyTheFormBlock() {
+        let web = """
+            export const c = {
+              name: 'Card',
+              form: {
+                id: 'form.card',
+                invariants: ['One.', 'A long ' +
+                  'sentence.', 'It\\'s escaped.'],
+              },
+            };
+            """
+        #expect(Self.formStrings(inWebContract: web) == ["form.card", "One.", "A long sentence.", "It's escaped."])
+        #expect(Self.formStrings(inWebContract: "export const c = { name: 'Card' };").isEmpty)
+    }
+
+    @Test func neighborsHonorTheHopLimit() {
+        #expect(Catalog.neighbors(of: "Surface", hops: 0).isEmpty)
+        #expect(Catalog.neighbors(of: "Surface", hops: -1).isEmpty)
+        #expect(Catalog.neighbors(of: "Surface", hops: 1).map(\.name) == ["Card"])
     }
 }
