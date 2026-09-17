@@ -127,35 +127,66 @@ struct ContractTests {
         }
         for directory in componentDirectoryNames {
             units[directory] = swiftSources(in: componentsDirectory.appendingPathComponent(directory))
-                .flatMap { patterns(in: $0).filter { $0.hasPrefix("\\b") } }
+                .flatMap { patterns(in: $0).filter { $0.hasPrefix("\\b") } + stylePatterns(in: $0) }
         }
         return units
     }
 
+    /// A style component is never named where it is used — `.buttonStyle(.trembus)` — so its pattern is
+    /// the modifier plus the static member, read from `extension ButtonStyle where Self == …`.
+    static func stylePatterns(in source: String) -> [String] {
+        source.matches(of: /(?ms)^extension (\w+Style) where Self == \w+ \{(.*?)^\}/).flatMap { match in
+            let modifier = match.1.prefix(1).lowercased() + match.1.dropFirst()
+            let members = Set(match.2.matches(of: /public static (?:var|func) (\w+)/).map { String($0.1) })
+            return members.sorted().map { "\\.\(modifier)\\(\\s*\\.\($0)\\b" }
+        }
+    }
+
+    /// The units (primitive files + components) that `sources` really use, leaving out `own`.
+    /// Comment lines are dropped: a usage example in a doc comment is not a dependency.
+    static func unitsUsed(in sources: [String], except own: String? = nil) throws -> Set<String> {
+        let source = sources.joined(separator: "\n").split(separator: "\n")
+            .filter { !$0.trimmingCharacters(in: .whitespaces).hasPrefix("//") }
+            .joined(separator: "\n")
+        var used: Set<String> = []
+        for (unit, patterns) in unitPatterns where unit != own {
+            // NSRegularExpression on purpose: Swift Regex's `\\b` follows Unicode word rules, where the
+            // "." in `ControlMetrics.button` does NOT end a word.
+            let isUsed = try patterns.contains {
+                try NSRegularExpression(pattern: $0)
+                    .firstMatch(in: source, range: NSRange(source.startIndex..., in: source)) != nil
+            }
+            if isUsed { used.insert(unit) }
+        }
+        return used
+    }
+
     @Test func buildsOnMatchesWhatTheSourceReallyUses() throws {
-        let units = Self.unitPatterns
-        #expect(units["Surface"] != nil, "found no primitives — is the path right?")
+        #expect(Self.unitPatterns["Surface"] != nil, "found no primitives — is the path right?")
         for entry in Self.componentEntries {
             guard let contract = entry.contract else { continue }
-            // Comment lines are dropped: a usage example in a doc comment is not a dependency.
-            let source = Self.swiftSources(in: Self.componentsDirectory.appendingPathComponent(entry.name))
-                .joined(separator: "\n").split(separator: "\n")
-                .filter { !$0.trimmingCharacters(in: .whitespaces).hasPrefix("//") }
-                .joined(separator: "\n")
-            var used: Set<String> = []
-            for (unit, patterns) in units where unit != entry.name {
-                // NSRegularExpression on purpose: Swift Regex's `\\b` follows Unicode word rules, where the
-                // "." in `ControlMetrics.button` does NOT end a word.
-                let isUsed = try patterns.contains {
-                    try NSRegularExpression(pattern: $0)
-                        .firstMatch(in: source, range: NSRange(source.startIndex..., in: source)) != nil
-                }
-                if isUsed { used.insert(unit) }
-            }
+            let used = try Self.unitsUsed(
+                in: Self.swiftSources(in: Self.componentsDirectory.appendingPathComponent(entry.name)),
+                except: entry.name)
             #expect(
                 Set(contract.buildsOn) == used,
                 "\(entry.name).buildsOn says \(contract.buildsOn.sorted()) but its source uses \(used.sorted())")
         }
+    }
+
+    @Test func styleComponentsAreFoundByTheirModifier() throws {
+        let button = try #require(Self.unitPatterns["Button"])
+        func uses(_ call: String) throws -> Bool {
+            try button.contains {
+                try NSRegularExpression(pattern: $0).firstMatch(in: call, range: NSRange(call.startIndex..., in: call))
+                    != nil
+            }
+        }
+        #expect(try uses("Button(\"Save\") {}.buttonStyle(.trembus)"))
+        #expect(try uses("Button(\"More\") {}.buttonStyle(.trembus(.ghost))"))
+        #expect(try !uses("Button {} label: { card }.buttonStyle(.trembusCard)"), "that one is Card's")
+        #expect(try !uses("Toggle(\"Sync\", isOn: $sync).toggleStyle(.trembus)"), "that one is Switch's")
+        #expect(try !uses("Text(\"Save\").font(.trembus(.sm))"))
     }
 
     @Test func neighborsWalkBuildsOnBackwards() {
@@ -163,6 +194,76 @@ struct ContractTests {
         #expect(ofSurface.contains("Card"))
         #expect(!ofSurface.contains("Surface"))
         #expect(Catalog.neighbors(of: "NoSuchThing").isEmpty)
+    }
+
+    // MARK: - Examples: mockups of several components together (no contract, a different gate)
+
+    /// `Sources/TrembusCatalog/Entries/Examples/`.
+    static let examplesDirectory =
+        componentsDirectory
+        .deletingLastPathComponent().deletingLastPathComponent()
+        .appendingPathComponent("TrembusCatalog/Entries/Examples", isDirectory: true)
+
+    static var exampleEntries: [CatalogEntry] { Catalog.entries(of: .example) }
+
+    static func exampleFile(_ name: String) -> URL { examplesDirectory.appendingPathComponent("\(name)Entry.swift") }
+
+    @Test func everyExampleFileHasACatalogEntryAndBack() {
+        let files =
+            (try? FileManager.default.contentsOfDirectory(at: Self.examplesDirectory, includingPropertiesForKeys: nil))
+            ?? []
+        let onDisk = Set(
+            files.map(\.lastPathComponent).filter { $0.hasSuffix("Entry.swift") }.map { String($0.dropLast(11)) })
+        let registered = Set(Self.exampleEntries.map(\.name))
+        #expect(!onDisk.isEmpty, "found no example files — is the path right?")
+        for name in onDisk.subtracting(registered).sorted() {
+            Issue.record(
+                "Entries/Examples/\(name)Entry.swift is not listed in Catalog.entries as an example named '\(name)'")
+        }
+        for name in registered.subtracting(onDisk).sorted() {
+            Issue.record("example '\(name)' has no Entries/Examples/\(name)Entry.swift")
+        }
+    }
+
+    @Test func examplesCarryNoContractAndOnlyExamplesCompose() {
+        for entry in Catalog.entries {
+            if entry.kind == .example {
+                #expect(
+                    entry.contract == nil,
+                    "\(entry.name): an example has no three-jobs story — drop the contract, or make it a component")
+            } else {
+                #expect(
+                    entry.composes.isEmpty,
+                    "\(entry.name): `composes` is for examples; a component says `buildsOn` in its contract")
+            }
+        }
+    }
+
+    @Test func anExampleComposesAtLeastTwoComponents() {
+        let components = Set(Self.componentEntries.map(\.name))
+        for entry in Self.exampleEntries {
+            #expect(
+                components.intersection(entry.composes).count >= 2,
+                "\(entry.name) composes \(entry.composes) — one component alone is a specimen of that component, not an example"
+            )
+        }
+    }
+
+    @Test func composesMatchesWhatTheExampleReallyUses() throws {
+        for entry in Self.exampleEntries {
+            guard let source = try? String(contentsOf: Self.exampleFile(entry.name), encoding: .utf8) else { continue }
+            let used = try Self.unitsUsed(in: [source])
+            #expect(
+                Set(entry.composes) == used,
+                "\(entry.name).composes says \(entry.composes.sorted()) but its source uses \(used.sorted())")
+        }
+    }
+
+    @Test func neighborsReachTheExamples() {
+        #expect(Catalog.neighbors(of: "Input").map(\.name).contains("ProjectSettings"))
+        // Two hops: Surface → Card → the example that composes Card.
+        #expect(Catalog.neighbors(of: "Surface").contains { $0.name == "ProjectSettings" && $0.distance == 2 })
+        #expect(Catalog.neighbors(of: "ProjectSettings").isEmpty, "nothing builds on an example")
     }
 
     // MARK: - Form: the shared meaning (authored on the web, mirrored here)

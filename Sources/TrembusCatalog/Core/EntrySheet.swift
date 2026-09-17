@@ -68,6 +68,11 @@ public struct EntrySheet: View {
                     .font(.trembus(.xs))
                     .foregroundStyle(.theme(.textDim))
             }
+            if !entry.composes.isEmpty {
+                Text("composes " + entry.composes.joined(separator: " · "))
+                    .font(.trembus(.xs))
+                    .foregroundStyle(.theme(.textDim))
+            }
         }
         .foregroundStyle(.theme(.text))
         .padding(.horizontal, Space.s5)

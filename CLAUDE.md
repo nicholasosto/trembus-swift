@@ -26,7 +26,7 @@ edit ──▶ make snap NAME=X ──▶ READ Snapshots/X.png ──▶ make ga
 | --- | --- |
 | `make snap [NAME=X]` | PNG contact sheets → `Snapshots/`. `ARGS='--singles --scale 3'` for close-ups. |
 | `make gallery [NAME=X THEME=dark]` | Builds + opens the live gallery as a real app (`com.trembus.gallery`). |
-| `make neighbors NAME=X` | Harmonics: what to re-look at when X changes — everything that builds on it, ≤2 hops. |
+| `make neighbors NAME=X` | Harmonics: what to re-look at when X changes — every component that builds on it **and every example that composes it**, ≤2 hops. |
 | `make forms` | Platonics: every Form + what each Shape builds on, as JSON. For consumers / a Relay House. Read-only. |
 | `make new NAME=X [LEAD=…]` | Scaffolds the three-file shape. Gate stays red until the contract TODOs are real. |
 | `make validate` | **The gate**: lint + build + test. Run before calling anything done. |
@@ -38,6 +38,11 @@ edit ──▶ make snap NAME=X ──▶ READ Snapshots/X.png ──▶ make ga
 and attaches the sheets as the `snapshots` artifact. The runner is a headless 1× machine — the same
 conditions that once made snapshots blurry — so a green run also proves the density fix off this Mac.
 The repo is **public**: a push to `main` is a publication.
+
+**`main` is ruled** (GitHub ruleset "main: PR + green gate", since 2026-09-17): changes land by **branch → PR →
+green `validate` check → merge**. Zero approvals required (solo repo — you cannot approve your own PR). Admins can
+bypass for an emergency; don't make it the habit. The check is named after the CI job id — rename the `validate`
+job in `ci.yml` and every PR blocks forever until the ruleset is updated to match.
 
 Skills: **`/new-component <Name>`** scaffolds. **`/finish-component <Name>`** is the done-bar
 (look in 3 themes → feel it live → adversarial review → fixes WITH tests → re-gate).
@@ -63,6 +68,36 @@ Skills: **`/new-component <Name>`** scaffolds. **`/finish-component <Name>`** is
   it; Textarea and Select should too. Spoken-text rules live in `FieldText` / `FieldStatus` so they are testable.
 - **Three-file shape**: `Components/<Name>/` + `Entries/Components/<Name>Entry.swift` +
   `Tests/…/<Name>Tests.swift`. Specimens named `Default` / `States` / `Interaction`. `contract.name` = directory name.
+
+## Examples — mockups of several components together
+
+```
+                  contract?   gated by                                     lives in
+ component        ✅ 3 jobs    contract · 3 specimens · buildsOn · render   Components/<Name>/ + Entries/Components/
+ example          ❌ none      composes · ≥2 components · render            Entries/Examples/<Name>Entry.swift   (ONE file)
+
+ change Input ──▶ make neighbors NAME=Input ──▶ … ProjectSettings ──▶ re-snap + READ it
+```
+
+An example answers a different question from a component's specimens: not "does this do its three
+jobs" but **"do these sit well together"** — heights line up, spacing holds, a whole-screen state
+reads as one thing in every theme. Same rule as the web's `src/examples/`: a page that groups
+components is NOT a component and gets no contract.
+
+- **One file**: `Entries/Examples/<Name>Entry.swift`, `kind: .example`, listed under `// Examples` in
+  `Catalog.entries` (below the `scaffold:entries` marker). No `make new` — there is nothing else to scaffold.
+- **`composes:`** — primitive FILE names + component names, like `buildsOn`. `composesMatchesWhatTheExampleReallyUses`
+  reads the entry's source, so it cannot rot; that list is what puts the example on the `make neighbors` walk.
+  Style components are found by their modifier (`.buttonStyle(.trembus)` → Button, `.toggleStyle(.trembus)` → Switch).
+- **Public API only.** The catalog reaches the library through a plain `import TrembusUI`, as a consumer does.
+  If a mockup needs something internal, that is a finding about the library — never `@testable` your way in.
+- **Specimens are SCREEN states, not control states**: `Default` (happy path) · `States` (empty · invalid ·
+  busy …, side by side) · `Interaction` (live). Drive the stills and the live one from ONE layout fed plain
+  data (see `ProjectForm`), so the still cannot drift from the real thing.
+- **A mockup finds things; it does not fix them.** What looks wrong in a group (a Meter that does not dim in a
+  disabled form, accent and danger colliding in reliquary) goes back to the component or the tokens.
+  Never patch it inside the example — and never bend a component to suit one mockup.
+- The done-bar is lighter than `/finish-component`: snap → READ all three themes → gallery → `make validate`.
 
 ## Form → Shape → Instance (Platonics) · what moves together (Harmonics)
 
