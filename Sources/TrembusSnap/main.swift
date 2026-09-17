@@ -12,6 +12,8 @@ import TrembusUI
 //   swift run TrembusSnap Button --singles      also Snapshots/Button/<Specimen>.<theme>.png
 //   swift run TrembusSnap --theme dark          only one theme band per specimen
 //   swift run TrembusSnap --list                what's in the catalog
+//   swift run TrembusSnap --neighbors Surface   what to re-look at when Surface changes (no PNGs)
+//   swift run TrembusSnap --forms               every Form + what each Shape builds on, as JSON
 //
 // One sheet per entry = every specimen × every theme in a single image.
 
@@ -22,6 +24,8 @@ struct Options {
     var themes = Theme.all
     var singles = false
     var list = false
+    var neighborsOf: String?
+    var forms = false
 }
 
 func fail(_ message: String) -> Never {
@@ -48,8 +52,14 @@ func parse(_ arguments: [String]) -> Options {
             options.themes = [theme]
         case "--singles": options.singles = true
         case "--list": options.list = true
+        case "--neighbors":
+            guard let value = iterator.next() else { fail("--neighbors needs a primitive or component name") }
+            options.neighborsOf = value
+        case "--forms": options.forms = true
         case "-h", "--help":
-            print("usage: TrembusSnap [Name …] [--singles] [--theme NAME] [--scale N] [--out DIR] [--list]")
+            print(
+                "usage: TrembusSnap [Name …] [--singles] [--theme NAME] [--scale N] [--out DIR] [--list] [--neighbors NAME] [--forms]"
+            )
             exit(0)
         default:
             if argument.hasPrefix("-") { fail("unknown option \(argument)") }
@@ -68,6 +78,35 @@ if options.list {
             print("  \(entry.name)  —  " + entry.specimens.map(\.name).joined(separator: " · "))
         }
     }
+    exit(0)
+}
+
+// Harmonics: who builds on this, walked backwards two hops. Names only, one per line, so it pipes:
+//   make snap NAME="$(make -s neighbors NAME=Surface)"
+if let changed = options.neighborsOf {
+    for neighbor in Catalog.neighbors(of: changed) { print(neighbor.name) }
+    exit(0)
+}
+
+// Platonics: the Forms this library expresses, for a consumer (or a Relay House) to adopt. Read-only.
+if options.forms {
+    struct Export: Encodable {
+        struct Shape: Encodable {
+            let component: String
+            let buildsOn: [String]
+            let form: ComponentForm?
+        }
+        let library = "trembus-swift"
+        let shapes: [Shape]
+    }
+    let export = Export(
+        shapes: Catalog.entries(of: .component).compactMap { entry in
+            entry.contract.map { .init(component: entry.name, buildsOn: $0.buildsOn.sorted(), form: $0.form) }
+        })
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+    guard let data = try? encoder.encode(export) else { fail("could not encode the forms") }
+    print(String(decoding: data, as: UTF8.self))
     exit(0)
 }
 

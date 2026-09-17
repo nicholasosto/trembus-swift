@@ -73,6 +73,7 @@ done
 # avatarGroup from AvatarGroup; urlField from URLField.
 LOWER="$(perl -e '$_ = shift; s/^([A-Z]+)([A-Z][a-z])/\L$1\E$2/ or s/^([A-Z]+)$/\L$1/ or s/^([A-Z])/\L$1/; print' "$NAME")"
 DECLARED="$LOWER"
+FORM_ID="$(printf "%s" "$NAME" | tr "[:upper:]" "[:lower:]")"
 case " associatedtype class deinit enum extension fileprivate func import init inout internal let open operator private precedencegroup protocol public rethrows static struct subscript typealias var break case catch continue default defer do else fallthrough for guard if in repeat return throw switch where while Any as await false is nil self Self super throws true try " in
     *" $LOWER "*) DECLARED="\`$LOWER\`" ;;
 esac
@@ -133,7 +134,21 @@ extension CatalogEntry {
                 "TODO: how does it answer every input? (or: takes no input — how does it show change?)",
                 specimen: "Interaction"),
             a11y: .init(focusRing: false),
-            tokensUsed: ["TODO"]),
+            tokensUsed: ["TODO"],
+            // Shape: the primitives + components this is made of. The gate checks it against the source.
+            buildsOn: [],
+            // Form: what $NAME IS, on any platform. Write this BEFORE designing. If the web has a
+            // $NAME, author it in its $NAME.contract.ts first and mirror it here word for word.
+            form: ComponentForm(
+                id: "form.$FORM_ID",
+                revision: "r1",
+                meaning: "TODO: one sentence — what a $NAME must mean, whatever it looks like.",
+                invariants: ["TODO: what every expression of it must preserve — checkable by test or by eye"],
+                prohibitions: ["TODO: what it must never do or be used for"],
+                variation: ["TODO: where the web and SwiftUI versions are free to differ"],
+                relationships: [
+                    // .init(.distinctFrom, "form.neighbor", note: "how to tell them apart")
+                ])),
         specimens: [
             Specimen("Default", note: "$NAME(\"Label\")") {
                 $NAME("Label")
@@ -193,7 +208,9 @@ updated  $CATALOG_FILE   (+ .$LOWER)
 
 next
   1. make snap NAME=$NAME      see it in all three themes → Snapshots/$NAME.png
-  2. design it                 $COMPONENT_FILE
-  3. fill the contract         the gate stays RED while it says TODO — on purpose
-  4. make validate
+  2. name the Form FIRST       meaning · invariants · prohibitions — in $ENTRY_FILE
+                               (the web has a $NAME? author it in its $NAME.contract.ts first, mirror it here)
+  3. design it                 $COMPONENT_FILE
+  4. fill the contract         the gate stays RED while it says TODO — on purpose
+  5. make validate
 EOF

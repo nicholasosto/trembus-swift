@@ -26,12 +26,31 @@ make new NAME=AvatarGroup LEAD=reveal-state     # or afford-action | acknowledge
 - It refuses to overwrite, and refuses a name SwiftUI already uses (see "Style or view?").
 
 The scaffold compiles, lints, and renders in all three themes straight away.
-**The contract gate stays RED until the three `TODO` statements are real sentences.** That is on purpose — a contract that says TODO is not a contract.
+**The contract gate stays RED until every `TODO` — the three jobs AND the Form — is a real sentence.** That is on purpose — a contract that says TODO is not a contract.
+
+## Name the Form first (Platonics)
+
+```
+Form      what it IS — meaning · invariants · prohibitions · permitted variation     shared
+ └▶ Shape     one expression of it: the React component, this SwiftUI one          per repo
+     └▶ Instance  one real use: a specimen, a card on a consumer's screen
+```
+
+Before any design, fill `form:` in `<Name>Entry.swift`. It is the brief the design must satisfy.
+
+- **The web has a `<Name>`?** Read `../Trembus-Component-Library/packages/ui/src/components/<Name>/`
+  (`.tsx`, `.css`, `.contract.ts`). Author the Form in its `<Name>.contract.ts` FIRST — that repo is
+  the source of truth, like the tokens — then mirror it here **word for word**. The gate compares them
+  whenever the sibling is checked out. That repo usually has uncommitted work: touch only the contract file.
+- **No web version?** Author it here. Same fields, same bar.
+- **Invariants must be checkable** — by a test or by eye on the sheet. "Feels premium" is not one.
+- **Name the near neighbor** as a `.distinctFrom` relationship: it is the sentence that stops misuse.
+- Changing meaning or an invariant later = a new `revision`, on the web first.
 
 ## After scaffolding
 
 1. `make snap NAME=<Name>` — then **Read `Snapshots/<Name>.png`**. Look before you design.
-2. Design `<Name>.swift`:
+2. Design `<Name>.swift` — every invariant in the Form should be visible in a specimen or held by a test:
    - **tokens only** — `.theme(.surface)`, `.tone(.success, .bg)`, `Space.s4`, `Radius.md`. Never a hex, never a magic number.
    - **size follows `.controlSize(_:)`** — add a table to `Primitives/ControlMetrics.swift`; no `size:` parameter.
    - **interactive?** build on `Pressable` (or `InteractionReader` inside a style) so every state can be frozen with `.interactionOverride(_:)`.
@@ -39,7 +58,8 @@ The scaffold compiles, lints, and renders in all three themes straight away.
 3. Make the specimens earn their names:
    - `Default` — the one-line usage. `States` — every state, frozen (`StateRow { … }`). `Interaction` — live, with `@State`.
    - Every specimen needs a **definite size**: give flexible views a `.frame(width:)`.
-4. Replace the contract `TODO`s. Honest beats impressive — "non-interactive by design — it reports state" is a fine answer.
+4. Replace the contract `TODO`s, and keep `buildsOn:` honest — the gate reads the source and tells you
+   exactly which primitives and components you used. That list is what `make neighbors` walks. Honest beats impressive — "non-interactive by design — it reports state" is a fine answer.
 5. Put the component's own logic (clamping, value → tone rules) behind an internal computed property and test it in `<Name>Tests.swift`, the way `MeterTests` checks `Meter.fraction`.
 6. `make validate`, then run **/finish-component <Name>** — that is the done-bar, not green tests.
 
