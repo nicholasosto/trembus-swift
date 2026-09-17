@@ -26,6 +26,8 @@ edit ──▶ make snap NAME=X ──▶ READ Snapshots/X.png ──▶ make ga
 | --- | --- |
 | `make snap [NAME=X]` | PNG contact sheets → `Snapshots/`. `ARGS='--singles --scale 3'` for close-ups. |
 | `make gallery [NAME=X THEME=dark]` | Builds + opens the live gallery as a real app (`com.trembus.gallery`). |
+| `make neighbors NAME=X` | Harmonics: what to re-look at when X changes — everything that builds on it, ≤2 hops. |
+| `make forms` | Platonics: every Form + what each Shape builds on, as JSON. For consumers / a Relay House. Read-only. |
 | `make new NAME=X [LEAD=…]` | Scaffolds the three-file shape. Gate stays red until the contract TODOs are real. |
 | `make validate` | **The gate**: lint + build + test. Run before calling anything done. |
 | `make format` · `lint` · `doctor` · `clean` | House style · check only · which toolchain · wipe `.build` + `Snapshots`. |
@@ -61,6 +63,26 @@ Skills: **`/new-component <Name>`** scaffolds. **`/finish-component <Name>`** is
   it; Textarea and Select should too. Spoken-text rules live in `FieldText` / `FieldStatus` so they are testable.
 - **Three-file shape**: `Components/<Name>/` + `Entries/Components/<Name>Entry.swift` +
   `Tests/…/<Name>Tests.swift`. Specimens named `Default` / `States` / `Interaction`. `contract.name` = directory name.
+
+## Form → Shape → Instance (Platonics) · what moves together (Harmonics)
+
+```
+Form      what a component IS: meaning · invariants · prohibitions · variation     authored on the WEB
+ └▶ Shape     the React component · this SwiftUI one  (+ `buildsOn:` — what it is made of)
+     └▶ Instance  a specimen · a card on a consumer's screen
+
+change X ──▶ make neighbors NAME=X ──▶ re-snap + READ those sheets ──▶ a human judges
+```
+
+Vocabulary is Relay's (Form / Shape / Instance; Recorded ≠ Accept). Two fields on `ComponentContract`:
+
+- **`form:`** — mirrored **word for word** from `<Name>.contract.ts` next door, same rule as the tokens:
+  change it THERE first, bump `revision`. `everyFormMirrorsTheWebContractWordForWord` fails on drift
+  (it skips when the sibling isn't checked out, e.g. CI). Optional for now — only Card has one; back-fill
+  the others as their web contracts gain a `form`.
+- **`buildsOn:`** — primitive FILE names + component names. `buildsOnMatchesWhatTheSourceReallyUses` reads
+  the source, so the list cannot rot. (It uses `NSRegularExpression`: Swift Regex's `\b` follows Unicode
+  word rules, where the "." in `ControlMetrics.button` does not end a word.)
 
 ## Tokens: the web CSS is the source of truth
 

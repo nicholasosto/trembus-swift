@@ -10,13 +10,14 @@ SWIFT  := Scripts/swiftw
 PATHS  := Sources Tests Package.swift
 
 .DEFAULT_GOAL := help
-.PHONY: help build test snap gallery new format lint validate xcode doctor clean
+.PHONY: help build test snap neighbors forms gallery new format lint validate xcode doctor clean
 
 help: ## list commands
 	@awk 'BEGIN {FS = ":.*## "} /^[a-z]+:.*## / {printf "  make %-10s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo
 	@echo "  options:  make snap NAME=Button          one entry"
 	@echo "            make snap NAME=Button ARGS='--singles --scale 3'"
+	@echo "            make neighbors NAME=Surface"
 	@echo "            make gallery NAME=Button THEME=dark"
 	@echo "            make new NAME=Tag LEAD=reveal-state"
 
@@ -28,6 +29,12 @@ test: ## run the gate's tests: contrast, contracts, rendering, logic
 
 snap: ## render PNG contact sheets → Snapshots/   (NAME=Button for one)
 	@$(SWIFT) run TrembusSnap $(NAME) $(ARGS)
+
+neighbors: ## what to re-look at when NAME changes — everything that builds on it
+	@$(SWIFT) run TrembusSnap --neighbors $(NAME) 2>/dev/null
+
+forms: ## every Form + what each Shape builds on, as JSON (for consumers / a Relay House)
+	@$(SWIFT) run TrembusSnap --forms 2>/dev/null
 
 gallery: ## open the live gallery app   (NAME=Button THEME=dark)
 	@Scripts/gallery $(if $(NAME),--entry $(NAME)) $(if $(THEME),--theme $(THEME))
