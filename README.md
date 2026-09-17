@@ -95,3 +95,7 @@ Scripts/             swiftw · gallery · new-component
 ```
 
 Conventions, and the gotchas that cost real time to find, are in [CLAUDE.md](CLAUDE.md).
+
+## License
+
+[MIT](LICENSE) © Nicholas Osto

@@ -1,7 +1,8 @@
 # trembus-swift — guide for Claude
 
-A SwiftUI component library for macOS. The Swift sibling of `@trembus/ui`
-(`../Trembus-Component-Library`, React): same tokens, same three themes, same three-jobs contract.
+A SwiftUI component library for macOS. The Swift sibling of
+[`@trembus/ui`](https://github.com/nicholasosto/Trembus-Component-Library) (React — checked out
+next door as `../Trembus-Component-Library`): same tokens, same three themes, same three-jobs contract.
 
 ```
    TrembusTokens ──▶ TrembusUI ──▶ TrembusCatalog ─┬─▶ TrembusGallery   live app   (feel it)
@@ -57,7 +58,8 @@ Skills: **`/new-component <Name>`** scaffolds. **`/finish-component <Name>`** is
 ## Tokens: the web CSS is the source of truth
 
 `Sources/TrembusTokens/Themes.swift` is copied **hex-for-hex** from
-`../Trembus-Component-Library/packages/tokens/src/css/tokens.{light,dark,reliquary}.css`.
+[`packages/tokens/src/css/tokens.{light,dark,reliquary}.css`](https://github.com/nicholasosto/Trembus-Component-Library/tree/main/packages/tokens/src/css)
+in the React repo (locally: `../Trembus-Component-Library/…`).
 When that CSS changes, re-sync here. Don't fork a value locally — fix it there.
 
 Two deliberate differences from the web, both proven by `ContrastTests`:
@@ -71,8 +73,8 @@ Two deliberate differences from the web, both proven by `ContrastTests`:
 ## Gotchas — each of these cost real time once
 
 **1 · `@State` is a macro in the macOS 27 SDK, and Command Line Tools can't expand it.**
-CLT has no `SwiftUIMacros` plugin. If `xcode-select` points at CLT (it does on this machine — CLT
-updated ahead of Xcode), bare `swift build` dies on every `@State`. `Scripts/swiftw` picks a working
+CLT has no `SwiftUIMacros` plugin. If `xcode-select` points at CLT (common — CLT updates itself
+ahead of Xcode; it was the case on the machine this was built on), bare `swift build` dies on every `@State`. `Scripts/swiftw` picks a working
 toolchain per-command (full Xcode, else CLT + a pre-27 SDK) without touching system settings.
 `make doctor` shows what it picked. For the same reason: **`PreviewProvider`, not `#Preview`; hand-written
 `EnvironmentKey`, not `@Entry`** — so the package still builds on the CLT fallback.
@@ -93,8 +95,8 @@ builders and can't leave it. Render tests loop inside one test and name entry/sp
 
 **5 · The snapshot camera is a software renderer, and it lies in three known ways.**
 `Snapshotter` corrects the first two on the capture copy only — never bend a component to suit the camera.
-   - *Density*: an offscreen window rasterizes text at the **main screen's** scale. This machine's
-     display is 1×, so "2×" snapshots were blurry enlargements. Fixed by forcing `contentsScale`
+   - *Density*: an offscreen window rasterizes text at the **main screen's** scale. On a 1× display
+     (an external monitor, most CI runners) "2×" snapshots were blurry enlargements. Fixed by forcing `contentsScale`
      on the layer tree. Guarded by `snapshotsHaveTruePixelDensityOnAnyDisplay` (only TEXT discriminates).
    - *Pills*: `Capsule()` is a continuous-corner layer; the software renderer draws stray ticks
      on full pills. Fixed by falling back to circular for the photo, as the GPU does on screen.
