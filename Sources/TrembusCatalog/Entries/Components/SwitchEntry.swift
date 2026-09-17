@@ -22,7 +22,8 @@ extension CatalogEntry {
             a11y: .init(role: "switch", keyboard: ["Space"], focusRing: true),
             tokensUsed: [
                 "Tone", "ColorToken.borderStrong", "ColorToken.focusRing", "Elevation.e1", "Motion.Springs.snap",
-            ]),
+            ],
+            buildsOn: ["ControlMetrics", "ElevationModifier", "FocusRing", "InteractionState", "Pressable"]),
         specimens: [
             Specimen("Default", note: "Toggle(\"…\", isOn: $on).toggleStyle(.trembus)") {
                 VStack(alignment: .leading, spacing: Space.s4) {

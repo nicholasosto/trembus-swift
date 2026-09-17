@@ -23,7 +23,8 @@ extension CatalogEntry {
             tokensUsed: [
                 "ColorToken.surfaceRaised", "ColorToken.borderStrong", "ColorToken.accent", "ColorToken.focusRing",
                 "Tone.danger", "Radius.md",
-            ]),
+            ],
+            buildsOn: ["ControlMetrics", "FieldShell", "FocusRing", "InteractionState"]),
         specimens: [
             Specimen("Default", note: "Input(\"Email\", text: $email, prompt: \"you@example.com\")") {
                 VStack(alignment: .leading, spacing: Space.s5) {

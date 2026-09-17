@@ -20,7 +20,8 @@ extension CatalogEntry {
                 "takes no input itself; when the state it reports changes, it re-tones in place, and its label plus tone are exposed to VoiceOver as label and value.",
                 specimen: "Interaction"),
             a11y: .init(focusRing: false),
-            tokensUsed: ["Tone", "Radius.full", "Space", "TypeScale.xs/sm"]),
+            tokensUsed: ["Tone", "Radius.full", "Space", "TypeScale.xs/sm"],
+            buildsOn: ["ControlMetrics"]),
         specimens: [
             Specimen("Default", note: "Badge(\"Live\", tone: .success, showsDot: true)") {
                 HStack(spacing: Space.s4) {

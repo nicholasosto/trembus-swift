@@ -20,7 +20,8 @@ extension CatalogEntry {
                 "takes no input itself; when its value changes the fill glides on the calm curve and the percent ticks numerically, so the change is seen, not just the result.",
                 specimen: "Interaction"),
             a11y: .init(role: "meter (label + percent value)", focusRing: false),
-            tokensUsed: ["Tone", "ColorToken.surfaceSunken", "ColorToken.borderSoft", "Radius.full", "Motion.calm"]),
+            tokensUsed: ["Tone", "ColorToken.surfaceSunken", "ColorToken.borderSoft", "Radius.full", "Motion.calm"],
+            buildsOn: ["ControlMetrics"]),
         specimens: [
             Specimen("Default", note: "Meter(value: 0.64, label: \"Storage\", showsValue: true)") {
                 VStack(alignment: .leading, spacing: Space.s5) {

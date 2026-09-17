@@ -20,7 +20,8 @@ extension CatalogEntry {
                 "fill steps darker on hover then press; scales down on a no-bounce spring and releases with overshoot; focus ring for keyboard; Space activates.",
                 specimen: "Interaction"),
             a11y: .init(role: "button", keyboard: ["Space"], focusRing: true),
-            tokensUsed: ["Tone", "ColorToken.borderStrong", "ColorToken.focusRing", "Radius.md", "Space", "Motion"]),
+            tokensUsed: ["Tone", "ColorToken.borderStrong", "ColorToken.focusRing", "Radius.md", "Space", "Motion"],
+            buildsOn: ["ControlMetrics", "FocusRing", "InteractionState"]),
         specimens: [
             Specimen("Default", note: ".buttonStyle(.trembus) · .trembus(.outline) · .trembus(.ghost)") {
                 HStack(spacing: Space.s4) {
