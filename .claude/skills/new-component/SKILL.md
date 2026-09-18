@@ -50,7 +50,7 @@ Before any design, fill `form:` in `<Name>Entry.swift`. It is the brief the desi
 
 ## After scaffolding
 
-1. `make snap NAME=<Name>` — then **Read `Snapshots/<Name>.png`**. Look before you design.
+1. `make snap NAME=<Name>` — the sheet is for NICK to look at. Don't read the PNG yourself unless he asks.
 2. Design `<Name>.swift` — every invariant in the Form should be visible in a specimen or held by a test:
    - **tokens only** — `.theme(.surface)`, `.tone(.success, .bg)`, `Space.s4`, `Radius.md`. Never a hex, never a magic number.
    - **size follows `.controlSize(_:)`** — add a table to `Primitives/ControlMetrics.swift`; no `size:` parameter.
@@ -62,7 +62,7 @@ Before any design, fill `form:` in `<Name>Entry.swift`. It is the brief the desi
 4. Replace the contract `TODO`s, and keep `buildsOn:` honest — the gate reads the source and tells you
    exactly which primitives and components you used. That list is what `make neighbors` walks. Honest beats impressive — "non-interactive by design — it reports state" is a fine answer.
 5. Put the component's own logic (clamping, value → tone rules) behind an internal computed property and test it in `<Name>Tests.swift`, the way `MeterTests` checks `Meter.fraction`.
-6. `make validate`, then run **/finish-component <Name>** — that is the done-bar, not green tests.
+6. `make validate`, then hand Nick the sheet + gallery (**/finish-component <Name>**). Keep tests to a handful: logic that can really break.
 
 ## Style or view?
 
