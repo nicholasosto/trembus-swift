@@ -21,8 +21,8 @@ extension CatalogEntry {
                 specimen: "Interaction"),
             a11y: .init(role: "text field", keyboard: ["Tab", "Return"], focusRing: true),
             tokensUsed: [
-                "ColorToken.surfaceRaised", "ColorToken.borderStrong", "ColorToken.accent", "ColorToken.focusRing",
-                "Tone.danger", "Radius.md",
+                "ColorToken.surfaceRaised", "ColorToken.surfaceSunken", "ColorToken.borderStrong", "ColorToken.accent",
+                "ColorToken.focusRing", "ColorToken.text", "ColorToken.textFaint", "Tone.danger", "Radius.md",
             ],
             buildsOn: ["ControlMetrics", "FieldShell", "FocusRing", "InteractionState"]),
         specimens: [

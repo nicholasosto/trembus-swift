@@ -26,7 +26,7 @@ extension CatalogEntry {
                 "Radius.lg", "Elevation.e1/e2", "Space.s3/s4/s6", "Motion.calm",
                 "TypeScale.base",
             ],
-            buildsOn: ["FocusRing", "InteractionState", "Surface"],
+            buildsOn: ["ElevationModifier", "FocusRing", "InteractionState", "Surface"],
             // Mirrored word for word from Card.contract.ts in the web repo — change it THERE first.
             form: ComponentForm(
                 id: "form.card",

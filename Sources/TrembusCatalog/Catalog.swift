@@ -26,6 +26,7 @@ public enum Catalog {
         .switch,
         .input,
         .card,
+        .textarea,
         // scaffold:entries — `make new` inserts new components above this line
         // Examples
         .projectSettings,

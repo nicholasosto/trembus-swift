@@ -62,14 +62,28 @@ nonisolated enum FieldText {
         return !prompt.isEmpty && prompt != normalized(name)
     }
 
+    /// Where a NATIVE text control will put its text, so a hand-drawn placeholder can sit in the same place.
+    /// Measured, for the field AND the text view: `.leading` reaches AppKit as NATURAL alignment, which
+    /// follows the APP's direction and ignores SwiftUI's `layoutDirection`; `.trailing` / `.center` are
+    /// resolved against the environment.
+    static func placeholderAlignment(
+        _ textAlignment: TextAlignment, layoutDirection: LayoutDirection, appIsRTL: Bool
+    ) -> HorizontalAlignment {
+        switch textAlignment {
+        case .center: .center
+        case .trailing: .trailing
+        case .leading: appIsRTL == (layoutDirection == .rightToLeft) ? .leading : .trailing
+        }
+    }
+
     private static func normalized(_ string: String) -> String {
         string.lowercased().trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters))
     }
 }
 
 /// Shared chrome for a labeled control — label, helper text, the control, a live error.
-/// The single source of truth for that layout (the web's `FieldShell`): Input uses it today,
-/// Textarea and Select should use it when they arrive.
+/// The single source of truth for that layout (the web's `FieldShell`): Input and Textarea use it;
+/// Select should when it arrives.
 ///
 ///     label *            ← `.labelsHidden()` hides this row; the control keeps its accessible name
 ///     helper text
@@ -131,5 +145,27 @@ struct FieldShell<Control: View>: View {
         .onChange(of: status.error) { _, newError in
             if let newError { AccessibilityNotification.Announcement(newError).post() }
         }
+    }
+}
+
+extension View {
+    /// The box every text-like field sits in: a raised fill, a strong edge that turns accent on focus and
+    /// danger when invalid, the hugging field ring, and a dimmed, sunken look when disabled.
+    /// ONE place, so Input, Textarea and Select can never drift apart.
+    func fieldBox(_ state: InteractionState, status: FieldStatus, in shape: some InsettableShape) -> some View {
+        let edge: AnyShapeStyle =
+            switch status.edge(isFocused: state.isFocused) {
+            case .invalid: AnyShapeStyle(.tone(.danger))
+            case .focused: AnyShapeStyle(.theme(.accent))
+            case .rest: AnyShapeStyle(.theme(.borderStrong))
+            }
+        return background(.theme(state.isEnabled ? .surfaceRaised : .surfaceSunken), in: shape)
+            .overlay(shape.strokeBorder(edge, lineWidth: 1))
+            .fieldFocusRing(state.isFocused, isInvalid: status.isInvalid, in: shape)
+            .opacity(state.isEnabled ? 1 : 0.6)
+            // The whole box is the click target.
+            .contentShape(shape)
+            .motion(Motion.calm(.fast), value: state)
+            .motion(Motion.calm(.fast), value: status)
     }
 }

@@ -64,8 +64,8 @@ Skills: **`/new-component <Name>`** scaffolds. **`/finish-component <Name>`** is
   Curves (`Motion.calm`) for color/layout; springs (`Motion.spring(.snap)`) for anything the pointer touches.
 - **Tone is never the only signal.** Always a word; the dot becomes a glyph under Differentiate Without Color.
 - **Haptics for snaps and thresholds, not clicks** — a trackpad click already is one.
-- **Labeled controls share `FieldShell`** (label → helper → control → error), like the web's. Input uses
-  it; Textarea and Select should too. Spoken-text rules live in `FieldText` / `FieldStatus` so they are testable.
+- **Labeled controls share `FieldShell`** (label → helper → control → error), like the web's — and its
+  `fieldBox` (fill · edge · focus ring · disabled look). Input and Textarea use both; Select should too. Spoken-text rules live in `FieldText` / `FieldStatus` so they are testable.
 - **Three-file shape**: `Components/<Name>/` + `Entries/Components/<Name>Entry.swift` +
   `Tests/…/<Name>Tests.swift`. Specimens named `Default` / `States` / `Interaction`. `contract.name` = directory name.
 
@@ -115,7 +115,7 @@ Vocabulary is Relay's (Form / Shape / Instance; Recorded ≠ Accept). Two fields
 
 - **`form:`** — mirrored **word for word** from `<Name>.contract.ts` next door, same rule as the tokens:
   change it THERE first, bump `revision`. `everyFormMirrorsTheWebContractWordForWord` fails on drift
-  (it skips when the sibling isn't checked out, e.g. CI). Optional for now — only Card has one; back-fill
+  (it skips when the sibling isn't checked out, e.g. CI). Optional for now — only Card and Textarea have one; back-fill
   the others as their web contracts gain a `form`.
 - **`buildsOn:`** — primitive FILE names + component names. `buildsOnMatchesWhatTheSourceReallyUses` reads
   the source, so the list cannot rot. (It uses `NSRegularExpression`: Swift Regex's `\b` follows Unicode
@@ -192,10 +192,31 @@ each has a regression test that was seen failing first.
      the selection to the end when IT hands focus over (a click on the box's chrome, the secure ⇄ plain
      swap) — never for Tab, where select-all is what a keyboard user expects.
    - Swapping `TextField` ⇄ `SecureField` is a different native view: **focus is dropped** unless handed back.
-   - Focus-dependent tests need a real (never shown) window that claims to be key — see `InputLiveTests`.
+   - Focus-dependent tests need a real (never shown) window that claims to be key — see `LiveWindowTests`.
      A main-actor test IS a main-queue job, so anything the component defers only runs once the test `await`s.
 
+**9 · A native macOS text VIEW (`TextEditor`) is not a text field — six more surprises.** All found building
+`Textarea`; each has a test in `TextareaLiveTests` that was seen failing first.
+   - It has **no height of its own** — it fills what it is given. An invisible `Text` (same font, same
+     5pt `lineFragmentPadding`) decides the height and the editor is laid over it.
+   - With **classic scroll bars** (shown whenever a mouse is plugged in) it gives 17pt of width to the bar
+     even with nothing to scroll, so its text wraps narrower than you think. The sizer reserves the same
+     gutter, or the box comes out lines too short. Held by `theBoxIsExactlyAsTallAsTheNativeTextInsideIt` —
+     which only bites on a machine with classic bars; on a trackpad-only Mac the gutter is 0.
+   - **Tab types a tab.** In a form Tab means "next field", so `Textarea` catches it and moves the key view.
+     **Shift-Tab is not Tab + shift**: it arrives as its own character, backtab (`U+0019`).
+   - `NSApp.keyWindow` is **nil whenever the app is not active**. Ask the windows (`isKeyWindow`) instead.
+   - While an input method composes it posts **no `NSText.didChangeNotification`** (a field editor does).
+     Its selection does move on every composing keystroke — watch `didChangeSelectionNotification`.
+   - **Two "always key" test windows steal focus from each other.** Every suite that mounts a window lives in
+     an `extension LiveWindowTests { … }`, whose `.serialized` runs them one at a time across files.
+
 ## Not verified yet
+
+- **Textarea inside a scrolling page** — does its native scroll view swallow the scroll wheel when it has
+  nothing to scroll, so the page stops under the pointer? Suspected, never observed. Feel it in the gallery.
+- **Textarea: Tab while an input method composes** (Option-E, then Tab). Tab is let through on purpose —
+  the input method may want it — so AppKit may commit the accent AND type a tab.
 
 - The **live keyboard focus ring**. It draws correctly when frozen (`.interactionOverride(.focused)`),
   but real Tab focus was never observed — needs System Settings → Keyboard → Keyboard navigation ON.

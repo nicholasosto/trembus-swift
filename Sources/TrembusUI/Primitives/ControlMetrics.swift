@@ -55,6 +55,22 @@ nonisolated enum ControlMetrics {
         }
     }
 
+    struct Textarea {
+        let paddingX: CGFloat
+        let paddingY: CGFloat
+        let type: TypeScale
+    }
+
+    /// No height: a textarea is as tall as its lines. `paddingX` and `type` match `input`, so the
+    /// text in a textarea starts exactly under the text of the input above it.
+    static func textarea(_ step: Step) -> Textarea {
+        switch step {
+        case .sm: Textarea(paddingX: Space.s3, paddingY: Space.s2, type: .sm)
+        case .md: Textarea(paddingX: Space.s4, paddingY: Space.s3, type: .base)
+        case .lg: Textarea(paddingX: Space.s4, paddingY: Space.s3, type: .md)
+        }
+    }
+
     struct Badge {
         let height: CGFloat
         let paddingX: CGFloat

@@ -168,9 +168,23 @@ struct ContractTests {
         #expect(Self.unitPatterns["Surface"] != nil, "found no primitives — is the path right?")
         for entry in Self.componentEntries {
             guard let contract = entry.contract else { continue }
-            let used = try Self.unitsUsed(
+            var used = try Self.unitsUsed(
                 in: Self.swiftSources(in: Self.componentsDirectory.appendingPathComponent(entry.name)),
                 except: entry.name)
+            // One step through the primitives too: a ring drawn by `FieldShell` is still a ring on Input.
+            // Primitives have no catalog entry, so without this `make neighbors NAME=FocusRing` would
+            // stop at FieldShell and never reach the fields that wear it.
+            for primitive in used {
+                let file = Self.primitivesDirectory.appendingPathComponent(primitive + ".swift")
+                guard let source = try? String(contentsOf: file, encoding: .utf8) else { continue }
+                // Primitives only: `ControlMetrics` has a table NAMED after every component it sizes.
+                let reached = try Self.unitsUsed(in: [source], except: primitive).filter {
+                    FileManager.default.fileExists(
+                        atPath: Self.primitivesDirectory.appendingPathComponent($0 + ".swift").path)
+                }
+                used.formUnion(reached)
+            }
+            used.remove(entry.name)
             #expect(
                 Set(contract.buildsOn) == used,
                 "\(entry.name).buildsOn says \(contract.buildsOn.sorted()) but its source uses \(used.sorted())")

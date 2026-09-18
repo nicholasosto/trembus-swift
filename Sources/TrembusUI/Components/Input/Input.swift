@@ -98,16 +98,10 @@ public struct Input<Leading: View, Trailing: View>: View {
         .font(.trembus(metrics.type))
         .padding(.horizontal, metrics.paddingX)
         .frame(height: metrics.height)
-        .background(.theme(state.isEnabled ? .surfaceRaised : .surfaceSunken), in: shape)
-        .overlay(shape.strokeBorder(edgeStyle(state), lineWidth: 1))
-        .fieldFocusRing(state.isFocused, isInvalid: status.isInvalid, in: shape)
-        .opacity(state.isEnabled ? 1 : 0.6)
+        .fieldBox(state, status: status, in: shape)
         // The whole box is the click target, and says so with a text cursor.
-        .contentShape(shape)
         .onTapGesture(perform: focusFromChrome)
         .pointerStyle(state.isEnabled ? .horizontalText : .default)
-        .motion(Motion.calm(.fast), value: state)
-        .motion(Motion.calm(.fast), value: status)
     }
 
     private var field: some View {
@@ -192,23 +186,11 @@ public struct Input<Leading: View, Trailing: View>: View {
     }
 
     /// Where the NATIVE field will put its text, so the hand-drawn placeholder sits in the same place.
-    /// Measured: `.leading` reaches AppKit as NATURAL alignment, which follows the APP's direction and
-    /// ignores SwiftUI's `layoutDirection`; `.trailing` / `.center` are resolved against the environment.
     private var placeholderAlignment: Alignment {
-        switch textAlignment {
-        case .center: return .center
-        case .trailing: return .trailing
-        case .leading:
-            let appIsRTL = NSApp?.userInterfaceLayoutDirection == .rightToLeft
-            return appIsRTL == (layoutDirection == .rightToLeft) ? .leading : .trailing
-        }
-    }
-
-    private func edgeStyle(_ state: InteractionState) -> AnyShapeStyle {
-        switch status.edge(isFocused: state.isFocused) {
-        case .invalid: AnyShapeStyle(.tone(.danger))
-        case .focused: AnyShapeStyle(.theme(.accent))
-        case .rest: AnyShapeStyle(.theme(.borderStrong))
-        }
+        Alignment(
+            horizontal: FieldText.placeholderAlignment(
+                textAlignment, layoutDirection: layoutDirection,
+                appIsRTL: NSApp?.userInterfaceLayoutDirection == .rightToLeft),
+            vertical: .center)
     }
 }
