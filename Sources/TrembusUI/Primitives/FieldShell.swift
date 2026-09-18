@@ -82,8 +82,7 @@ nonisolated enum FieldText {
 }
 
 /// Shared chrome for a labeled control — label, helper text, the control, a live error.
-/// The single source of truth for that layout (the web's `FieldShell`): Input and Textarea use it;
-/// Select should when it arrives.
+/// The single source of truth for that layout (the web's `FieldShell`): Input, Textarea and Select use it.
 ///
 ///     label *            ← `.labelsHidden()` hides this row; the control keeps its accessible name
 ///     helper text
