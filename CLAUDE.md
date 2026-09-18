@@ -24,8 +24,8 @@ _Reveal State · Afford Action · Acknowledge Input_.
 ## The loop
 
 ```
-edit ──▶ make snap NAME=X ──▶ READ Snapshots/X.png ──▶ make gallery NAME=X ──▶ make validate
-          every specimen          Claude's eyes            how it feels             the gate
+edit ──▶ make validate ──▶ make snap NAME=X + make gallery NAME=X ──▶ NICK looks and feels ──▶ fix what he names
+          the gate            sheets + live app, opened FOR NICK           his eyes, his hands
           × every theme
 ```
 
@@ -52,7 +52,18 @@ bypass for an emergency; don't make it the habit. The check is named after the C
 job in `ci.yml` and every PR blocks forever until the ruleset is updated to match.
 
 Skills: **`/new-component <Name>`** scaffolds. **`/finish-component <Name>`** is the done-bar
-(look in 3 themes → feel it live → adversarial review → fixes WITH tests → re-gate).
+(gate → hand Nick the sheet + gallery → fix what he names → re-gate). A deep review is opt-in.
+
+**Nick judges look and feel. Claude does not.** Usage is a weekly budget, and checking is what burns it:
+
+- **No screenshots by default.** Don't read `Snapshots/*.png`, don't drive the gallery. Run `make snap` /
+  `make gallery` so NICK can look, and ask what he sees. Read ONE image — cropped, low scale — only when he
+  asks, or to chase a visual bug he has described.
+- **No review agents, no fan-out**, unless Nick asks for a deep review in his own words. Say the rough cost first.
+- **Tests are for logic that can break** (clamping, rounding, a rule the Form states) — a handful per
+  component, written with the code. No "seen failing first" ritual, no real-window tests unless a bug needs one.
+- **One gate run at the end.** Filter tests while iterating. Can't verify something here after one try? Write
+  it under "Not verified yet" and move on.
 
 ## House rules
 
@@ -83,7 +94,7 @@ Skills: **`/new-component <Name>`** scaffolds. **`/finish-component <Name>`** is
  component        ✅ 3 jobs    contract · 3 specimens · buildsOn · render   Components/<Name>/ + Entries/Components/
  example          ❌ none      composes · ≥2 components · render            Entries/Examples/<Name>Entry.swift   (ONE file)
 
- change Input ──▶ make neighbors NAME=Input ──▶ … ProjectSettings ──▶ re-snap + READ it
+ change Input ──▶ make neighbors NAME=Input ──▶ … ProjectSettings ──▶ re-snap, Nick looks
 ```
 
 An example answers a different question from a component's specimens: not "does this do its three
@@ -106,7 +117,7 @@ components is NOT a component and gets no contract.
 - **A mockup finds things; it does not fix them.** What looks wrong in a group (a Meter that does not dim in a
   disabled form, accent and danger colliding in reliquary) goes back to the component or the tokens.
   Never patch it inside the example — and never bend a component to suit one mockup.
-- The done-bar is lighter than `/finish-component`: snap → READ all three themes → gallery → `make validate`.
+- The done-bar: `make validate` → snap + gallery for Nick → fix what he names.
 
 ## Form → Shape → Instance (Platonics) · what moves together (Harmonics)
 
@@ -115,7 +126,7 @@ Form      what a component IS: meaning · invariants · prohibitions · variatio
  └▶ Shape     the React component · this SwiftUI one  (+ `buildsOn:` — what it is made of)
      └▶ Instance  a specimen · a card on a consumer's screen
 
-change X ──▶ make neighbors NAME=X ──▶ re-snap + READ those sheets ──▶ a human judges
+change X ──▶ make neighbors NAME=X ──▶ re-snap those sheets ──▶ Nick judges
 ```
 
 Vocabulary is Relay's (Form / Shape / Instance; Recorded ≠ Accept). Two fields on `ComponentContract`:
