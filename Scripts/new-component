@@ -137,8 +137,8 @@ extension CatalogEntry {
             tokensUsed: ["TODO"],
             // Shape: the primitives + components this is made of. The gate checks it against the source.
             buildsOn: [],
-            // Form: what $NAME IS, on any platform. Write this BEFORE designing. If the web has a
-            // $NAME, author it in its $NAME.contract.ts first and mirror it here word for word.
+            // Form: what $NAME IS, on any platform. Write this BEFORE designing. The web repo is read-only
+            // from here: if its $NAME.contract.ts already has a `form:`, copy it word for word; else author it here.
             form: ComponentForm(
                 id: "form.$FORM_ID",
                 revision: "r1",
@@ -209,7 +209,7 @@ updated  $CATALOG_FILE   (+ .$LOWER)
 next
   1. make snap NAME=$NAME      see it in all three themes → Snapshots/$NAME.png
   2. name the Form FIRST       meaning · invariants · prohibitions — in $ENTRY_FILE
-                               (the web has a $NAME? author it in its $NAME.contract.ts first, mirror it here)
+                               (the web has a $NAME? READ its $NAME.contract.ts — never edit over there)
   3. design it                 $COMPONENT_FILE
   4. fill the contract         the gate stays RED while it says TODO — on purpose
   5. make validate

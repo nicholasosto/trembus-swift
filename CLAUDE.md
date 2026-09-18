@@ -5,6 +5,13 @@ A SwiftUI component library for macOS. The Swift sibling of
 next door as `../Trembus-Component-Library`): same tokens, same three themes, same three-jobs contract.
 
 ```
+../Trembus-Component-Library   READ-ONLY from here.  Look at it · never edit, build, test or commit in it.
+./  (trembus-swift)            all work in a session opened here happens HERE.
+```
+
+Something over there looks wrong or is missing? **Say so to Nick** — it is fixed in a session opened there.
+
+```
    TrembusTokens ──▶ TrembusUI ──▶ TrembusCatalog ─┬─▶ TrembusGallery   live app   (feel it)
    values only       primitives    contract +       ├─▶ TrembusSnap      PNG sheets (see it)
    thread-safe       components    specimens        ├─▶ Xcode previews   canvas
@@ -104,7 +111,7 @@ components is NOT a component and gets no contract.
 ## Form → Shape → Instance (Platonics) · what moves together (Harmonics)
 
 ```
-Form      what a component IS: meaning · invariants · prohibitions · variation     authored on the WEB
+Form      what a component IS: meaning · invariants · prohibitions · variation     authored HERE
  └▶ Shape     the React component · this SwiftUI one  (+ `buildsOn:` — what it is made of)
      └▶ Instance  a specimen · a card on a consumer's screen
 
@@ -113,10 +120,12 @@ change X ──▶ make neighbors NAME=X ──▶ re-snap + READ those sheets �
 
 Vocabulary is Relay's (Form / Shape / Instance; Recorded ≠ Accept). Two fields on `ComponentContract`:
 
-- **`form:`** — mirrored **word for word** from `<Name>.contract.ts` next door, same rule as the tokens:
-  change it THERE first, bump `revision`. `everyFormMirrorsTheWebContractWordForWord` fails on drift
-  (it skips when the sibling isn't checked out, e.g. CI). Optional for now — only Card and Textarea have one; back-fill
-  the others as their web contracts gain a `form`.
+- **`form:`** — authored **here**, in `<Name>Entry.swift`. Read the web's `<Name>.contract.ts` first if it
+  exists: when it already holds a `form:` (Card does), say the same thing word for word —
+  `aFormTheWebAlsoHasSaysTheSameThing` reports any difference, both ways (it skips on CI, where the web repo
+  is not checked out). When the web has none (Textarea), this repo's Form stands on its own. A difference is
+  a note for Nick, never a reason to edit next door. Changing meaning or an invariant = bump `revision`.
+  Optional for now — only Card and Textarea have one.
 - **`buildsOn:`** — primitive FILE names + component names. `buildsOnMatchesWhatTheSourceReallyUses` reads
   the source, so the list cannot rot. (It uses `NSRegularExpression`: Swift Regex's `\b` follows Unicode
   word rules, where the "." in `ControlMetrics.button` does not end a word.)
@@ -126,7 +135,8 @@ Vocabulary is Relay's (Form / Shape / Instance; Recorded ≠ Accept). Two fields
 `Sources/TrembusTokens/Themes.swift` is copied **hex-for-hex** from
 [`packages/tokens/src/css/tokens.{light,dark,reliquary}.css`](https://github.com/nicholasosto/Trembus-Component-Library/tree/main/packages/tokens/src/css)
 in the React repo (locally: `../Trembus-Component-Library/…`).
-When that CSS changes, re-sync here. Don't fork a value locally — fix it there.
+When that CSS changes, re-sync here. Don't fork a value locally — and don't edit the CSS from here:
+a value that looks wrong over there is a note for Nick.
 
 Two deliberate differences from the web, both proven by `ContrastTests`:
 

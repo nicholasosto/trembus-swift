@@ -38,14 +38,15 @@ Form      what it IS — meaning · invariants · prohibitions · permitted vari
 
 Before any design, fill `form:` in `<Name>Entry.swift`. It is the brief the design must satisfy.
 
-- **The web has a `<Name>`?** Read `../Trembus-Component-Library/packages/ui/src/components/<Name>/`
-  (`.tsx`, `.css`, `.contract.ts`). Author the Form in its `<Name>.contract.ts` FIRST — that repo is
-  the source of truth, like the tokens — then mirror it here **word for word**. The gate compares them
-  whenever the sibling is checked out. That repo usually has uncommitted work: touch only the contract file.
+- **Everything happens in THIS repo.** `../Trembus-Component-Library` is read-only from here: never edit,
+  build, test or commit in it.
+- **The web has a `<Name>`?** READ `../Trembus-Component-Library/packages/ui/src/components/<Name>/`
+  (`.tsx`, `.css`, `.contract.ts`) — it is the design brief. If its contract already has a `form:` block,
+  copy those sentences here word for word (the gate compares them). If it has none, author the Form here.
 - **No web version?** Author it here. Same fields, same bar.
 - **Invariants must be checkable** — by a test or by eye on the sheet. "Feels premium" is not one.
 - **Name the near neighbor** as a `.distinctFrom` relationship: it is the sentence that stops misuse.
-- Changing meaning or an invariant later = a new `revision`, on the web first.
+- Changing meaning or an invariant later = a new `revision`.
 
 ## After scaffolding
 

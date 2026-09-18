@@ -51,13 +51,13 @@ nonisolated public struct JobSatisfaction: Sendable, Hashable {
 
 /// What a component IS, apart from how any one platform draws it — a Relay-style *Form*.
 ///
-///     Form      meaning + invariants + prohibitions + permitted variation   (shared, authored on the web)
+///     Form      meaning + invariants + prohibitions + permitted variation   (shared; authored in this repo)
 ///      └▶ Shape     one expression of it: the React component, this SwiftUI one
 ///          └▶ Instance  one real use: a specimen, a card on a consumer's screen
 ///
-/// **The web contract is the source of truth**, exactly like the tokens: a Form is authored in
-/// `<Name>.contract.ts` next door and mirrored here word for word. `ContractTests` compares the two
-/// when the sibling checkout is present. Changing meaning or an invariant is a NEW revision there first.
+/// A Form is authored HERE. The web repo next door is read-only from this one: where its `<Name>.contract.ts`
+/// already holds a `form:` (Card), this one says the same thing word for word, and `ContractTests` reports any
+/// difference when the sibling checkout is present. Changing meaning or an invariant is a NEW revision.
 nonisolated public struct ComponentForm: Sendable, Hashable, Codable {
     /// A meaning-level link to another Form. Authored, never inferred; it says "review these
     /// together", not "this causes that".
@@ -80,7 +80,7 @@ nonisolated public struct ComponentForm: Sendable, Hashable, Codable {
 
     /// `form.<name, lowercased>`.
     public var id: String
-    /// The web revision this Shape mirrors, e.g. `r1`.
+    /// The revision of the Form, e.g. `r1`. Bump it when meaning or an invariant changes.
     public var revision: String
     /// One sentence: what a result of this Form must mean.
     public var meaning: String
@@ -136,7 +136,7 @@ nonisolated public struct ComponentContract: Sendable, Hashable {
     /// expression is made of. `ContractTests` checks it against the source, so it cannot rot —
     /// and `make neighbors NAME=X` walks it backwards to say what to re-look at when X changes.
     public var buildsOn: [String]
-    /// The shared meaning this component expresses. `nil` until its Form is authored on the web.
+    /// The shared meaning this component expresses. `nil` until its Form is authored.
     public var form: ComponentForm?
 
     public init(

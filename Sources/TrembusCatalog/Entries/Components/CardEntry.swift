@@ -27,7 +27,8 @@ extension CatalogEntry {
                 "TypeScale.base",
             ],
             buildsOn: ["ElevationModifier", "FocusRing", "InteractionState", "Surface"],
-            // Mirrored word for word from Card.contract.ts in the web repo — change it THERE first.
+            // Says the same thing, word for word, as the `form:` in the web's Card.contract.ts (read-only
+            // from here). The gate reports any difference; it is settled by Nick, not by editing next door.
             form: ComponentForm(
                 id: "form.card",
                 revision: "r1",

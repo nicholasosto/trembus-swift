@@ -27,7 +27,8 @@ extension CatalogEntry {
             ],
             // Shape: the primitives + components this is made of. The gate checks it against the source.
             buildsOn: ["ControlMetrics", "FieldShell", "FocusRing", "InteractionState"],
-            // Form: mirrored word for word from the web's Textarea.contract.ts. Change it THERE first.
+            // Form: authored here — the web's Textarea.contract.ts has none yet. If it gains one, the gate
+            // compares the two and reports any difference.
             form: ComponentForm(
                 id: "form.textarea",
                 revision: "r1",

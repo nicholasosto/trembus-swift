@@ -298,7 +298,7 @@ struct ContractTests {
         #expect(Catalog.neighbors(of: "ProjectSettings").isEmpty, "nothing builds on an example")
     }
 
-    // MARK: - Form: the shared meaning (authored on the web, mirrored here)
+    // MARK: - Form: the shared meaning (authored here; compared with the web, read-only, where it has one)
 
     @Test func everyFormIsWellFormed() {
         for entry in Self.componentEntries {
@@ -326,17 +326,17 @@ struct ContractTests {
         .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         .appendingPathComponent("Trembus-Component-Library/packages/ui/src/components", isDirectory: true)
 
-    /// The drift signal. The web contract is the source of truth; this Shape mirrors it word for word —
-    /// in BOTH directions: a sentence added on the web and missing here is drift too.
-    @Test func everyFormMirrorsTheWebContractWordForWord() throws {
+    /// The drift signal, READ-ONLY. This repo never writes next door. A Form may be authored here (the web
+    /// has none yet — nothing to compare) or the web may already hold one (Card); then the two must say the
+    /// same thing, in BOTH directions. A difference is reported for a human to settle; it is never "fixed"
+    /// by editing the web repo from here.
+    @Test func aFormTheWebAlsoHasSaysTheSameThing() throws {
         for entry in Self.componentEntries {
             guard let form = entry.contract?.form else { continue }
             let file = Self.webComponentsDirectory.appendingPathComponent("\(entry.name)/\(entry.name).contract.ts")
             guard let web = try? String(contentsOf: file, encoding: .utf8) else { continue }
             let webStrings = Self.formStrings(inWebContract: web)
-            #expect(
-                !webStrings.isEmpty, "\(file.lastPathComponent) has no `form:` block, but \(entry.name) has a Form here"
-            )
+            guard !webStrings.isEmpty else { continue }  // authored here; the web has no Form to drift from
             let mirrored = Set(
                 [form.id, form.revision, form.meaning] + form.invariants + form.prohibitions + form.variation
                     + form.relationships.flatMap { [$0.kind.rawValue, $0.target, $0.note] })
