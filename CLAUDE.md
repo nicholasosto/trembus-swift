@@ -83,7 +83,7 @@ Skills: **`/new-component <Name>`** scaffolds. **`/finish-component <Name>`** is
 - **Tone is never the only signal.** Always a word; the dot becomes a glyph under Differentiate Without Color.
 - **Haptics for snaps and thresholds, not clicks** — a trackpad click already is one.
 - **Labeled controls share `FieldShell`** (label → helper → control → error), like the web's — and its
-  `fieldBox` (fill · edge · focus ring · disabled look). Input and Textarea use both; Select should too. Spoken-text rules live in `FieldText` / `FieldStatus` so they are testable.
+  `fieldBox` (fill · edge · focus ring · disabled look). Input, Textarea and Select use both. Spoken-text rules live in `FieldText` / `FieldStatus` so they are testable.
 - **Three-file shape**: `Components/<Name>/` + `Entries/Components/<Name>Entry.swift` +
   `Tests/…/<Name>Tests.swift`. Specimens named `Default` / `States` / `Interaction`. `contract.name` = directory name.
 
@@ -236,6 +236,12 @@ each has a regression test that was seen failing first.
      an `extension LiveWindowTests { … }`, whose `.serialized` runs them one at a time across files.
 
 ## Not verified yet
+
+- **Select: real keyboard use, and the scroll wheel.** The closed box is a Trembus `Pressable`; the open list is a
+  native `NSMenu`, popped from an invisible AppKit view laid over the box. Nick drove it live in the gallery
+  (2026-09-18): where the menu lands, click · click, and press · drag · release all pass. NOT tried: Space and the
+  arrow keys opening it from the button (they need Keyboard navigation ON), and whether the page still scrolls
+  with the pointer over the box. VoiceOver reads it as a button with a value, not as a pop-up button.
 
 - **Waveform: real keyboard use.** Play, the clock and drag-to-seek were driven live in the gallery. Tab onto the
   wave, the arrow / Page / Home / End keys and Space were NOT (they need Keyboard navigation ON) — only their

@@ -71,6 +71,22 @@ nonisolated enum ControlMetrics {
         }
     }
 
+    struct Select {
+        let height: CGFloat
+        let paddingX: CGFloat
+        let type: TypeScale
+        /// The chevrons at the trailing edge. One size at every step, like the web's 12px mark — and
+        /// never `.xs`: the snapshot camera drops an SF Symbol that small.
+        var glyph: TypeScale { .sm }
+    }
+
+    /// Height, padding and type match `input` on purpose: in a form the two sit in one column, and the
+    /// chosen option must start exactly under the text of the input above it.
+    static func select(_ step: Step) -> Select {
+        let input = input(step)
+        return Select(height: input.height, paddingX: input.paddingX, type: input.type)
+    }
+
     struct Badge {
         let height: CGFloat
         let paddingX: CGFloat
