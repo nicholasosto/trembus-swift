@@ -138,7 +138,7 @@ extension CatalogEntry {
             // Shape: the primitives + components this is made of. The gate checks it against the source.
             buildsOn: [],
             // Form: what $NAME IS, on any platform. Write this BEFORE designing. The web repo is read-only
-            // from here: if its $NAME.contract.ts already has a `form:`, copy it word for word; else author it here.
+            // from here: if its $NAME.contract.ts already has a \`form:\`, copy it word for word; else author it here.
             form: ComponentForm(
                 id: "form.$FORM_ID",
                 revision: "r1",

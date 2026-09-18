@@ -96,6 +96,21 @@ struct ContractTests {
         }
     }
 
+    /// House rule: `.motion(_:value:)`, never bare `.animation` — the wrapper is what honors Reduce Motion.
+    /// (Found in review: the shared Spinner used a bare one, so it spun on with Reduce Motion on.)
+    @Test func theLibraryNeverAnimatesAroundReduceMotion() throws {
+        let library = Self.componentsDirectory.deletingLastPathComponent()
+        let files = try #require(FileManager.default.enumerator(at: library, includingPropertiesForKeys: nil))
+        for case let file as URL in files where file.pathExtension == "swift" {
+            guard file.lastPathComponent != "MotionModifiers.swift" else { continue }  // the one place allowed to
+            let source = try String(contentsOf: file, encoding: .utf8)
+            for (number, line) in source.split(separator: "\n", omittingEmptySubsequences: false).enumerated()
+            where line.contains(".animation(") && !line.trimmingCharacters(in: .whitespaces).hasPrefix("//") {
+                Issue.record("\(file.lastPathComponent):\(number + 1) uses a bare .animation — use .motion(_:value:)")
+            }
+        }
+    }
+
     // MARK: - Shape: what each component is built from (Harmonics walks this)
 
     static let primitivesDirectory = componentsDirectory.deletingLastPathComponent()
@@ -326,6 +341,30 @@ struct ContractTests {
         .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         .appendingPathComponent("Trembus-Component-Library/packages/ui/src/components", isDirectory: true)
 
+    /// A component that goes by another name next door. Without this the drift check would look for
+    /// `Waveform/Waveform.contract.ts`, find nothing, and stay green whatever the web's Form came to say.
+    static let webNames = ["Waveform": "AudioWaveform"]
+
+    static func webContractFile(for name: String) -> URL {
+        let web = webNames[name] ?? name
+        return webComponentsDirectory.appendingPathComponent("\(web)/\(web).contract.ts")
+    }
+
+    @Test func aComponentRenamedNextDoorIsStillPairedWithItsWebContract() {
+        #expect(Self.webContractFile(for: "Waveform").lastPathComponent == "AudioWaveform.contract.ts")
+        #expect(Self.webContractFile(for: "Card").lastPathComponent == "Card.contract.ts")
+        for (name, _) in Self.webNames {
+            #expect(Self.componentEntries.contains { $0.name == name }, "\(name) is paired but is not a component here")
+        }
+        // The other half only bites where the web repo is checked out (it is not on CI): a pairing that
+        // points at nothing would quietly switch the drift check off.
+        guard FileManager.default.fileExists(atPath: Self.webComponentsDirectory.path) else { return }
+        for (name, _) in Self.webNames {
+            let file = Self.webContractFile(for: name)
+            #expect(FileManager.default.fileExists(atPath: file.path), "\(name) is paired with a missing \(file.path)")
+        }
+    }
+
     /// The drift signal, READ-ONLY. This repo never writes next door. A Form may be authored here (the web
     /// has none yet — nothing to compare) or the web may already hold one (Card); then the two must say the
     /// same thing, in BOTH directions. A difference is reported for a human to settle; it is never "fixed"
@@ -333,7 +372,7 @@ struct ContractTests {
     @Test func aFormTheWebAlsoHasSaysTheSameThing() throws {
         for entry in Self.componentEntries {
             guard let form = entry.contract?.form else { continue }
-            let file = Self.webComponentsDirectory.appendingPathComponent("\(entry.name)/\(entry.name).contract.ts")
+            let file = Self.webContractFile(for: entry.name)
             guard let web = try? String(contentsOf: file, encoding: .utf8) else { continue }
             let webStrings = Self.formStrings(inWebContract: web)
             guard !webStrings.isEmpty else { continue }  // authored here; the web has no Form to drift from

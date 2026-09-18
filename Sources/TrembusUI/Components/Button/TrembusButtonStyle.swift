@@ -127,18 +127,3 @@ private struct StyledButton: View {
         style.variant == .solid ? tone.fg : tone.text
     }
 }
-
-/// The web's border spinner: three quarters of a ring, turning.
-struct Spinner: View {
-    @State private var isSpinning = false
-
-    var body: some View {
-        Circle()
-            .trim(from: 0, to: 0.75)
-            .stroke(.foreground, style: StrokeStyle(lineWidth: 2, lineCap: .round))
-            .rotationEffect(.degrees(isSpinning ? 360 : 0))
-            .animation(.linear(duration: 0.6).repeatForever(autoreverses: false), value: isSpinning)
-            .onAppear { isSpinning = true }
-            .accessibilityHidden(true)
-    }
-}
