@@ -125,7 +125,7 @@ Vocabulary is Relay's (Form / Shape / Instance; Recorded ≠ Accept). Two fields
   `aFormTheWebAlsoHasSaysTheSameThing` reports any difference, both ways (it skips on CI, where the web repo
   is not checked out). When the web has none (Textarea), this repo's Form stands on its own. A difference is
   a note for Nick, never a reason to edit next door. Changing meaning or an invariant = bump `revision`.
-  Optional for now — only Card and Textarea have one.
+  Optional for now — only Card, Textarea and Waveform have one.
 - **`buildsOn:`** — primitive FILE names + component names. `buildsOnMatchesWhatTheSourceReallyUses` reads
   the source, so the list cannot rot. (It uses `NSRegularExpression`: Swift Regex's `\b` follows Unicode
   word rules, where the "." in `ControlMetrics.button` does not end a word.)
@@ -169,7 +169,7 @@ different type per specialization — hoist them out (see `SurfaceLevel`).
 **4 · Swift Testing evaluates `@Test(arguments:)` off the main actor.** Catalog entries hold view
 builders and can't leave it. Render tests loop inside one test and name entry/specimen/theme per failure.
 
-**5 · The snapshot camera is a software renderer, and it lies in three known ways.**
+**5 · The snapshot camera is a software renderer, and it lies in four known ways.**
 `Snapshotter` corrects the first two on the capture copy only — never bend a component to suit the camera.
    - *Density*: an offscreen window rasterizes text at the **main screen's** scale. On a 1× display
      (an external monitor, most CI runners) "2×" snapshots were blurry enlargements. Fixed by forcing `contentsScale`
@@ -177,6 +177,9 @@ builders and can't leave it. Render tests loop inside one test and name entry/sp
    - *Pills*: `Capsule()` is a continuous-corner layer; the software renderer draws stray ticks
      on full pills. Fixed by falling back to circular for the photo, as the GPU does on screen.
    - *Glass / materials*: not capturable at all. `Surface(.glass)` is blank in stills — check it live.
+   - *Tiny SF Symbols*: an `Image(systemName:)` at `.trembus(.xs)` (11pt) is MISSING from a still; at 12pt it
+     draws. Live it is there (seen in the gallery: Waveform's small status glyph). Not corrected yet — so a
+     blank where a small glyph should be is the camera until the gallery says otherwise.
    A live macOS 26 window can't be self-captured either (we tried a `--screenshot` flag; it came out blank and was removed).
 
 **6 · Specimens need a definite size.** A bare flexible view makes `Snapshotter` throw
@@ -222,6 +225,13 @@ each has a regression test that was seen failing first.
      an `extension LiveWindowTests { … }`, whose `.serialized` runs them one at a time across files.
 
 ## Not verified yet
+
+- **Waveform: real keyboard use.** Play, the clock and drag-to-seek were driven live in the gallery. Tab onto the
+  wave, the arrow / Page / Home / End keys and Space were NOT (they need Keyboard navigation ON) — only their
+  logic is tested. Same for VoiceOver's adjustable value. A real-window test could not hand the wave focus
+  either: Tab never reached it, even with `AppleKeyboardUIMode` forced on in the test's argument domain.
+- **Waveform with very many peaks.** The bars are re-fitted whenever the shape redraws. Fine at a few thousand;
+  never measured at 100k+ while playing.
 
 - **Textarea inside a scrolling page** — does its native scroll view swallow the scroll wheel when it has
   nothing to scroll, so the page stops under the pointer? Suspected, never observed. Feel it in the gallery.

@@ -21,7 +21,7 @@ extension CatalogEntry {
                 specimen: "Interaction"),
             a11y: .init(role: "button", keyboard: ["Space"], focusRing: true),
             tokensUsed: ["Tone", "ColorToken.borderStrong", "ColorToken.focusRing", "Radius.md", "Space", "Motion"],
-            buildsOn: ["ControlMetrics", "FocusRing", "InteractionState"]),
+            buildsOn: ["ControlMetrics", "FocusRing", "InteractionState", "Spinner"]),
         specimens: [
             Specimen("Default", note: ".buttonStyle(.trembus) · .trembus(.outline) · .trembus(.ghost)") {
                 HStack(spacing: Space.s4) {

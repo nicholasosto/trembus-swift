@@ -113,4 +113,40 @@ nonisolated enum ControlMetrics {
         case .lg: Meter(trackHeight: 12, type: .base)
         }
     }
+
+    struct Waveform {
+        /// The round play / pause button. Matches `button` heights: it lines up with a button beside it.
+        let toggle: CGFloat
+        /// The play / pause glyph: about half the button, whatever the label's type is.
+        let glyph: TypeScale
+        let waveHeight: CGFloat
+        /// The wave alone, as a thumbnail.
+        let compactHeight: CGFloat
+        let barWidth: CGFloat
+        let barGap: CGFloat
+        /// The playhead's width — and how far it overhangs the wave, top and bottom.
+        var playhead: CGFloat { 2 }
+        let type: TypeScale
+
+        /// More bars than any screen has points across. A ceiling, so a wild width cannot trap.
+        static let mostBars = 100_000
+
+        /// How many bars fit across `width` — never fewer than one.
+        func barCount(in width: CGFloat) -> Int {
+            guard width.isFinite, width > 0 else { return 1 }
+            // `Int(_:)` traps on a value it cannot hold, and "finite" is not "small": clamp first.
+            let fit = min((width + barGap) / (barWidth + barGap), CGFloat(Self.mostBars))
+            return max(1, Int(fit))
+        }
+    }
+
+    static func waveform(_ step: Step) -> Waveform {
+        switch step {
+        case .sm: Waveform(toggle: 24, glyph: .sm, waveHeight: 28, compactHeight: 20, barWidth: 2, barGap: 1, type: .xs)
+        case .md:
+            Waveform(toggle: 30, glyph: .base, waveHeight: 40, compactHeight: 28, barWidth: 2, barGap: 2, type: .sm)
+        case .lg:
+            Waveform(toggle: 38, glyph: .md, waveHeight: 52, compactHeight: 36, barWidth: 3, barGap: 2, type: .base)
+        }
+    }
 }
