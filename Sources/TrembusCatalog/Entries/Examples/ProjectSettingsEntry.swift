@@ -12,7 +12,7 @@ extension CatalogEntry {
     static let projectSettings = CatalogEntry(
         name: "ProjectSettings",
         kind: .example,
-        summary: "A settings pane: every component on one card, in the screen states a real form goes through.",
+        summary: "A settings pane: a card of components, in the screen states a real form goes through.",
         composes: ["Badge", "Button", "Card", "Input", "Meter", "Switch"],
         specimens: [
             Specimen("Default", note: "the happy path — a saved project, nothing wrong") {

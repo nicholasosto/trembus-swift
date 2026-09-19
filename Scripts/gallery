@@ -45,7 +45,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 # Ad-hoc signature over the whole bundle (local only — nothing is notarized or distributed).
-codesign --force --sign - "$APP" >/dev/null 2>&1
+# Don't both suppress stderr AND let `set -e` abort silently: say what failed.
+codesign --force --sign - "$APP" >/dev/null || { echo "gallery: codesign failed" >&2; exit 1; }
 
 open -n "$APP" --args "$@"
 echo "opened Trembus Gallery  ($BUNDLE_ID)"

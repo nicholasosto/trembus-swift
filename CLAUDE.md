@@ -136,7 +136,7 @@ Vocabulary is Relay's (Form / Shape / Instance; Recorded ≠ Accept). Two fields
   `aFormTheWebAlsoHasSaysTheSameThing` reports any difference, both ways (it skips on CI, where the web repo
   is not checked out). When the web has none (Textarea), this repo's Form stands on its own. A difference is
   a note for Nick, never a reason to edit next door. Changing meaning or an invariant = bump `revision`.
-  Optional for now — only Card, Textarea and Waveform have one.
+  Optional for now — only Card, Select, Textarea and Waveform have one.
 - **`buildsOn:`** — primitive FILE names + component names. `buildsOnMatchesWhatTheSourceReallyUses` reads
   the source, so the list cannot rot. (It uses `NSRegularExpression`: Swift Regex's `\b` follows Unicode
   word rules, where the "." in `ControlMetrics.button` does not end a word.)
@@ -259,3 +259,13 @@ each has a regression test that was seen failing first.
   but real Tab focus was never observed — needs System Settings → Keyboard → Keyboard navigation ON.
   Open question: a `ButtonStyle` can't call `.focusEffectDisabled()` on its own button from the inside,
   so macOS may draw its blue ring as well as ours.
+
+- **Meter fill direction under RTL.** The fill now anchors to the leading edge so it grows from the right
+  when `layoutDirection == .rightToLeft` (GeometryReader had pinned it left). Reasoned from the layout, not
+  yet seen in an RTL window — feel it in the gallery with the environment flipped. Waveform stays LTR on
+  purpose (a timeline does not mirror).
+
+- **VoiceOver traits are set but never read back in a test.** All nine components set labels/values (and
+  Switch/Waveform an accessibility representation), but no test asserts what a screen reader actually hears —
+  that needs XCUITest, which this package does not set up. The spoken-TEXT logic (`FieldText`, `FieldStatus`,
+  `WaveformText`) is unit-tested; the wiring itself is eyeballed with VoiceOver.

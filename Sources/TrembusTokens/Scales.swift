@@ -53,12 +53,6 @@ public enum TypeScale: String, CaseIterable, Sendable {
     public func tracking(_ tracking: Tracking) -> CGFloat { size * tracking.em }
 }
 
-/// Line-height multipliers.
-public enum Leading {
-    public static let tight: CGFloat = 1.2
-    public static let normal: CGFloat = 1.5
-}
-
 /// Letter-spacing, in `em`.
 public enum Tracking: Sendable {
     case normal, wide, caps
@@ -72,16 +66,11 @@ public enum Tracking: Sendable {
     }
 }
 
-/// Stacking order for `.zIndex(_:)`.
-public enum ZLayer {
-    public static let base: Double = 0
-    public static let dropdown: Double = 1000
-    public static let sticky: Double = 1100
-    public static let overlay: Double = 1200
-    public static let modal: Double = 1300
-    public static let popover: Double = 1350
-    public static let toast: Double = 1400
-    public static let tooltip: Double = 1500
+/// Opacity steps that aren't a color.
+public enum Opacity {
+    /// A disabled control: dimmed, but still legible. ONE value, so every control agrees —
+    /// change it here, not at the call sites.
+    public static let disabled: Double = 0.6
 }
 
 // MARK: - Typography

@@ -79,14 +79,18 @@ public struct Meter: View {
                 .fill(.theme(.surfaceSunken))
                 .overlay(Capsule().strokeBorder(.theme(.borderSoft), lineWidth: 1))
                 .frame(height: metrics.trackHeight)
-                .overlay(alignment: .leading) {
+                .overlay {
                     GeometryReader { proxy in
                         Capsule()
                             .fill(.tone(tone))
                             // Never thinner than a dot, so a tiny value is still a visible mark.
                             .frame(
                                 width: fraction == 0
-                                    ? 0 : max(proxy.size.width * fraction, metrics.trackHeight))
+                                    ? 0 : max(proxy.size.width * fraction, metrics.trackHeight)
+                            )
+                            // GeometryReader pins content top-LEFT and ignores layout direction; anchor the
+                            // fill to the leading edge ourselves so it grows from the right under RTL.
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
         }
@@ -95,6 +99,9 @@ public struct Meter: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(label ?? "Meter")
         .accessibilityValue(percent)
+        // Crossing into a new zone (danger / warning / success) is a threshold — mark it with a haptic.
+        // A `.fixed` meter's tone never changes, so it never fires.
+        .haptic(.level, trigger: tone)
     }
 
     private var percent: String {
