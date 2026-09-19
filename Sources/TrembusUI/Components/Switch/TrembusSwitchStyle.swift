@@ -45,13 +45,15 @@ private struct SwitchBody: View {
                     .font(.trembus(metrics.type))
                     .foregroundStyle(.theme(.text))
             }
-            .opacity(state.isEnabled ? 1 : 0.6)
+            .opacity(state.isEnabled ? 1 : Opacity.disabled)
             .contentShape(Rectangle())
         }
         // VoiceOver and keyboard users get a real switch, not "button".
         .accessibilityRepresentation {
             Toggle(isOn: configuration.$isOn) { configuration.label }
         }
+        // The thumb snaps home on a spring; a haptic marks that snap (never a plain click).
+        .haptic(.snap, trigger: configuration.isOn)
     }
 
     private func track(_ metrics: ControlMetrics.Switch, _ state: InteractionState) -> some View {
