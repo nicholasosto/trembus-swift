@@ -94,7 +94,7 @@ private struct StyledButton: View {
         .overlay(shape.strokeBorder(edge(tone).color, lineWidth: 1))
         .contentShape(shape)
         .focusRing(state.isFocused, in: shape)
-        .opacity(state.isEnabled ? 1 : 0.55)
+        .opacity(state.isEnabled ? 1 : Opacity.disabled)
         .motion(Motion.calm(.fast), value: state)
         // Down fast with no bounce, back up with a little life.
         .scaleEffect(state.isPressed && !reduceMotion ? 0.97 : 1)

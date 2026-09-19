@@ -112,7 +112,7 @@ struct FieldShell<Control: View>: View {
                     + Text(isRequired ? " *" : "").foregroundStyle(.tone(.danger, .text)))
                     .font(.trembus(.sm, weight: .medium))
                     // A frozen state (for stills) must dim the label exactly as the real one does.
-                    .opacity(override?.isEnabled ?? isEnabled ? 1 : 0.6)
+                    .opacity(override?.isEnabled ?? isEnabled ? 1 : Opacity.disabled)
                     .onTapGesture(perform: onLabelTap)
                     .accessibilityHidden(true)  // the control carries the accessible name
             }
@@ -161,7 +161,7 @@ extension View {
         return background(.theme(state.isEnabled ? .surfaceRaised : .surfaceSunken), in: shape)
             .overlay(shape.strokeBorder(edge, lineWidth: 1))
             .fieldFocusRing(state.isFocused, isInvalid: status.isInvalid, in: shape)
-            .opacity(state.isEnabled ? 1 : 0.6)
+            .opacity(state.isEnabled ? 1 : Opacity.disabled)
             // The whole box is the click target.
             .contentShape(shape)
             .motion(Motion.calm(.fast), value: state)

@@ -79,7 +79,7 @@ public struct Waveform: View {
         .background(.theme(.surface), in: shape)
         .overlay(shape.strokeBorder(edge, lineWidth: 1))
         // A frozen state (for stills) must dim the box exactly as the real one does.
-        .opacity(boxIsEnabled ? 1 : 0.6)
+        .opacity(boxIsEnabled ? 1 : Opacity.disabled)
         // Watch the status LINE, not the source: comparing thousands of peaks on every tick of a playing
         // sound would be work for nothing.
         .motion(Motion.calm(.fast), value: WaveformText.status(source))
@@ -260,7 +260,7 @@ private struct PlayToggle: View {
             .overlay(Circle().strokeBorder((isPlaying ? fill(colors) : theme.color.border).color, lineWidth: 1))
             .contentShape(Circle())
             .focusRing(state.isFocused, in: Circle())
-            .opacity(state.isEnabled || !dimsItself ? 1 : 0.55)
+            .opacity(state.isEnabled || !dimsItself ? 1 : Opacity.disabled)
             .motion(Motion.calm(.fast), value: state)
             .motion(Motion.calm(.fast), value: isPlaying)
             .scaleEffect(state.isPressed && !reduceMotion ? 0.97 : 1)

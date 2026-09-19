@@ -22,7 +22,7 @@ public struct TrembusCardButtonStyle: ButtonStyle {
                 .environment(\.cardInteraction, state)
                 .contentShape(shape)
                 .focusRing(state.isFocused, in: shape)
-                .opacity(state.isEnabled ? 1 : 0.55)
+                .opacity(state.isEnabled ? 1 : Opacity.disabled)
                 .motion(Motion.calm(.fast), value: state)
         }
     }
