@@ -31,10 +31,10 @@ snap: ## render PNG contact sheets → Snapshots/   (NAME=Button for one)
 	@$(SWIFT) run TrembusSnap $(NAME) $(ARGS)
 
 neighbors: ## what to re-look at when NAME changes — everything that builds on it
-	@$(SWIFT) run TrembusSnap --neighbors $(NAME) 2>/dev/null
+	@$(SWIFT) run TrembusSnap --neighbors $(NAME)
 
 forms: ## every Form + what each Shape builds on, as JSON (for consumers / a Relay House)
-	@$(SWIFT) run TrembusSnap --forms 2>/dev/null
+	@$(SWIFT) run TrembusSnap --forms
 
 gallery: ## open the live gallery app   (NAME=Button THEME=dark)
 	@Scripts/gallery $(if $(NAME),--entry $(NAME)) $(if $(THEME),--theme $(THEME))
