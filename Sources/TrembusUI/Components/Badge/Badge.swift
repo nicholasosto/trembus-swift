@@ -65,10 +65,13 @@ public struct Badge: View {
     @ViewBuilder
     private func marker(size: CGFloat) -> some View {
         if differentiateWithoutColor {
+            // A marker glyph, not body text: it sits a step under the label. Sized off the type
+            // metric (the one size table) — SF Symbols have no Trembus font token this small.
             Image(systemName: tone.symbolName)
                 .font(.system(size: size - 2, weight: .bold))
         } else {
-            Circle().frame(width: 6, height: 6)
+            // The dot is sized off the same metric, so it grows with controlSize like the glyph does.
+            Circle().frame(width: size / 2, height: size / 2)
         }
     }
 }
